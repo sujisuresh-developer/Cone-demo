@@ -3,7 +3,6 @@ import {
   X,
   ChevronDown,
   ChevronUp,
-  Clock,
   AlertTriangle,
   Lightbulb,
   ArrowRight,

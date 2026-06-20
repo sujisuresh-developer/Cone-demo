@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react'
-import { X, Activity, Scan, Heart, ShieldAlert, FileSpreadsheet, Layers } from 'lucide-react'
+import { X, ShieldAlert } from 'lucide-react'
+
+import { type ScenarioMode } from '../App'
 
 type Props = {
   open: boolean
   onClose: () => void
   actionId: string | null
+  scenario: ScenarioMode
+  onScenarioChange: (scenario: ScenarioMode) => void
 }
 
-type ScenarioMode = 'pneumothorax' | 'pe_trap' | 'stemi'
-
-export default function OutcomeModal({ open, onClose, actionId }: Props) {
+export default function OutcomeModal({ open, onClose, actionId, scenario, onScenarioChange }: Props) {
   const [isVisible, setIsVisible] = useState(false)
-  const [scenario, setScenario] = useState<ScenarioMode>('pneumothorax')
   
   // Interactive states for Lung Ultrasound
   const [usView, setUsView] = useState<'right' | 'left_anterior' | 'left_lateral'>('left_anterior')
@@ -21,7 +22,6 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
   useEffect(() => {
     if (open) {
       requestAnimationFrame(() => setIsVisible(true))
-      setScenario('pneumothorax')
       setUsView('left_anterior')
       setUsType('lung')
     } else {
@@ -43,33 +43,19 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
 
   // Determine modal header details
   let title = 'Diagnostic Result'
-  let Icon = Activity
-  let iconBg = 'bg-blue-50'
 
   if (actionId === 'lung-ultrasound') {
     title = 'Bedside Ultrasound (POCUS)'
-    Icon = Scan
-    iconBg = 'bg-blue-50'
   } else if (actionId === 'chest-xray') {
     title = 'Portable Chest X-Ray (CXR)'
-    Icon = Layers
-    iconBg = 'bg-purple-50'
   } else if (actionId === 'ecg-troponin') {
     title = '12-Lead ECG & Troponin'
-    Icon = Heart
-    iconBg = 'bg-red-50'
   } else if (actionId === 'ctpa') {
     title = 'CT Pulmonary Angiography'
-    Icon = Layers
-    iconBg = 'bg-indigo-50'
   } else if (actionId === 'leg-ultrasound') {
     title = 'Leg Ultrasound (DVT Check)'
-    Icon = Scan
-    iconBg = 'bg-teal-50'
   } else if (actionId === 'ddimer-bnp') {
     title = 'Lab Panels (D-Dimer & BNP)'
-    Icon = FileSpreadsheet
-    iconBg = 'bg-green-50'
   }
 
   return (
@@ -112,7 +98,7 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
           </div>
           <div className="flex rounded-lg bg-gray-200/50 p-0.5">
             <button
-              onClick={() => setScenario('pneumothorax')}
+              onClick={() => onScenarioChange('pneumothorax')}
               className={`px-2.5 py-1 text-[9px] font-bold rounded-md transition-all ${
                 scenario === 'pneumothorax'
                   ? 'bg-white text-gray-900 shadow-sm'
@@ -122,7 +108,7 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
               Pneumothorax
             </button>
             <button
-              onClick={() => setScenario('pe_trap')}
+              onClick={() => onScenarioChange('pe_trap')}
               className={`px-2.5 py-1 text-[9px] font-bold rounded-md transition-all ${
                 scenario === 'pe_trap'
                   ? 'bg-white text-gray-900 shadow-sm'
@@ -133,7 +119,7 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
             </button>
             {actionId === 'ecg-troponin' && (
               <button
-                onClick={() => setScenario('stemi')}
+                onClick={() => onScenarioChange('stemi')}
                 className={`px-2.5 py-1 text-[9px] font-bold rounded-md transition-all ${
                   scenario === 'stemi'
                     ? 'bg-white text-gray-900 shadow-sm'
