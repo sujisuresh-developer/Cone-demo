@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   X,
   ChevronDown,
@@ -42,6 +43,7 @@ export default function CaseSummaryModal({
   const [deductionsExpanded, setDeductionsExpanded] = useState(false)
   const [hintsExpanded, setHintsExpanded] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   if (!open) return null
 
@@ -295,7 +297,7 @@ export default function CaseSummaryModal({
           {/* Footer Actions */}
           <div className="flex gap-3 mt-auto pt-3 border-t border-gray-100 shrink-0">
             <button
-              onClick={onClose}
+              onClick={() => { onClose(); navigate('/dashboard') }}
               type="button"
               className="flex-1 py-3 border border-gray-250 rounded-xl text-[13px] font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
             >

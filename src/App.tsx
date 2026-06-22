@@ -287,9 +287,12 @@ export default function App() {
   const isNeedleDecomp = performedActions.includes('needle-decomp')
   const isTimeCrashed = secondsLeft <= 120 && !isNeedleDecomp
   
+  const hasTimedOutRef = useRef(false)
+
   // Auto-timeout effect
   useEffect(() => {
-    if (secondsLeft <= 0 && !caseEndReason) {
+    if (secondsLeft <= 0 && !caseEndReason && !hasTimedOutRef.current) {
+      hasTimedOutRef.current = true
       setCaseEndReason('timeout')
     }
   }, [secondsLeft, caseEndReason])
