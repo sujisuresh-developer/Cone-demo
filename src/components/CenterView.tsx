@@ -75,18 +75,39 @@ export default function CenterView({
     <main className="card-shadow relative flex h-full flex-col overflow-hidden rounded-3xl">
       <div className="absolute inset-0 bg-gray-900">
         {prevImg && (
+          prevImg.endsWith('.mp4') ? (
+            <video
+              src={`/${prevImg}`}
+              className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
+              autoPlay
+              muted
+              playsInline
+            />
+          ) : (
+            <img
+              src={`/${prevImg}`}
+              alt="Patient"
+              className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
+            />
+          )
+        )}
+        {currentImg.endsWith('.mp4') ? (
+          <video
+            key={currentImg}
+            src={`/${currentImg}`}
+            className={`absolute inset-0 h-full w-full object-cover object-top animate-fade-in transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
+            autoPlay
+            muted
+            playsInline
+          />
+        ) : (
           <img
-            src={`/${prevImg}`}
-            alt="Patient"
-            className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
+            key={currentImg}
+            src={`/${currentImg}`}
+            alt="Patient in hospital room"
+            className={`absolute inset-0 h-full w-full object-cover object-top animate-fade-in transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
           />
         )}
-        <img
-          key={currentImg}
-          src={`/${currentImg}`}
-          alt="Patient in hospital room"
-          className={`absolute inset-0 h-full w-full object-cover object-top animate-fade-in transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
-        />
         <div
           className={`absolute inset-0 transition-all duration-500 ease-in-out ${chatExpanded ? 'bg-white/30' : 'bg-black/5'
             }`}

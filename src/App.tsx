@@ -206,7 +206,7 @@ export default function App() {
 
   useEffect(() => {
     if (monitorAttached) {
-      triggerImageOverride('monitor-view.png')
+      triggerImageOverride('monitor-turningon.mp4')
     }
   }, [monitorAttached, triggerImageOverride])
 
@@ -239,7 +239,7 @@ export default function App() {
 
     let hasOverride = false
     if (actionId === 'chest-xray') {
-      triggerImageOverride('patient-going-xrayroom.png')
+      triggerImageOverride('xrayroom-entry.mp4')
       hasOverride = true
     } else if (medIds.includes(actionId)) {
       triggerImageOverride('patient-taking-medicine.png')
