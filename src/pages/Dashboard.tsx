@@ -57,8 +57,7 @@ function CalendarWidget() {
   // Highlighted: 3,4,5,6 = blue filled; 12,13,19,20,26,27 = blue text; 2,3 next month = blue
   const blueCircle = new Set([3, 4, 5, 6])
   const blueText = new Set([12, 13, 19, 20, 26, 27])
-  const prevDays = new Set<number>([30])
-  const nextDays = new Set<number>([]) // 1,2,3 appear as next month
+
 
   return (
     <div className="card-shadow rounded-3xl bg-white p-5">
@@ -143,7 +142,7 @@ export default function Dashboard() {
 
         {/* Nav */}
         <nav className="flex flex-col items-center gap-2 flex-1">
-          {NAV.map(({ Icon, path, label }, i) => {
+          {NAV.map(({ Icon, path, label }) => {
             const isActive = path === '/dashboard'
             return (
               <button
