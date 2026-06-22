@@ -88,7 +88,7 @@ body {
               opacity 0.4s ease-in-out;
 }
 
-/* ─── Vitals Detail Modal ─── */
+/* â”€â”€â”€ Vitals Detail Modal â”€â”€â”€ */
 
 .vitals-modal-overlay {
   position: fixed;
@@ -340,7 +340,7 @@ body {
   color: #9333ea;
 }
 
-/* ─── Reports Modal ─── */
+/* â”€â”€â”€ Reports Modal â”€â”€â”€ */
 
 .reports-modal-overlay {
   position: fixed;
@@ -560,3 +560,45 @@ body {
   line-height: 1.45;
   margin: 0 12px;
 }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DASHBOARD & CASES PAGE ANIMATIONS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+@keyframes cs-card-appear {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cs-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes cs-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Page transition ── */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Sidebar icon enters staggered */
+@keyframes sidebar-icon-enter {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
