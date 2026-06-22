@@ -82,6 +82,7 @@ export default function CenterView({
               autoPlay
               muted
               playsInline
+              loop={prevImg === 'patient-with-montior.mp4' || prevImg === 'patient-without-monitor.mp4'}
             />
           ) : (
             <img
@@ -99,6 +100,7 @@ export default function CenterView({
             autoPlay
             muted
             playsInline
+            loop={currentImg === 'patient-with-montior.mp4' || currentImg === 'patient-without-monitor.mp4'}
           />
         ) : (
           <img

@@ -242,10 +242,10 @@ export default function App() {
       triggerImageOverride('xrayroom-entry.mp4')
       hasOverride = true
     } else if (medIds.includes(actionId)) {
-      triggerImageOverride('patient-taking-medicine.png')
+      triggerImageOverride('taking-medicine.mp4')
       hasOverride = true
     } else if (procIds.includes(actionId)) {
-      triggerImageOverride('patient-taking-procedure.png')
+      triggerImageOverride('performing-surgery.mp4')
       hasOverride = true
     }
 
@@ -402,7 +402,7 @@ export default function App() {
   const vitals = getVitals(scenario, performedActions, secondsLeft)
 
   // Calculate patient image
-  let baseImage = 'patient-without-monitor.png'
+  let baseImage = 'patient-without-monitor.mp4'
   const [sysStr] = vitals.bp.split('/')
   const sys = Number(sysStr) || 120
   
@@ -414,7 +414,7 @@ export default function App() {
   } else if (isHappy) {
     baseImage = 'patient-happy.png'
   } else if (monitorAttached) {
-    baseImage = 'patient-with-monitor.png'
+    baseImage = 'patient-with-montior.mp4'
   }
 
   const patientImage = patientOverrideImage || baseImage
