@@ -9,6 +9,7 @@ import {
   Moon,
   X,
   ChevronRight,
+  ChevronDown,
   User,
   Heart,
   Thermometer,
@@ -17,6 +18,7 @@ import {
   Droplets,
   AlertCircle,
   Clock,
+  Hourglass,
   Stethoscope,
   Pill,
   Shield,
@@ -302,7 +304,7 @@ export default function CasesPage() {
 
   return (
     <div
-      className="flex h-screen w-screen overflow-hidden page-enter"
+      className="flex h-screen w-screen overflow-hidden"
       style={{ background: '#faf9f6', fontFamily: "'Inter', system-ui, sans-serif" }}
     >
       {/* ── Sidebar (identical to Dashboard) ── */}
@@ -390,26 +392,25 @@ export default function CasesPage() {
 
 
       {/* ── Main content ── */}
-      <main className="flex-1 flex flex-col overflow-hidden py-4 pr-4">
+      <main className="flex-1 flex flex-col overflow-hidden py-8 pr-12 pl-4 page-swipe-up">
         {/* Page header */}
-        <div className="flex items-start justify-between mb-5 flex-shrink-0">
+        <div className="flex items-start justify-between mb-8 flex-shrink-0">
           <div>
-            <h1 className="text-[28px] font-bold text-gray-900 leading-tight">
-              Case <span style={{ color: BLUE }}>Library</span>
+            <h1 className="text-[36px] font-bold text-gray-800 leading-tight">
+              <span style={{ color: BLUE }}>Case Lists</span> Section
             </h1>
-            <p className="text-[13px] text-gray-400 mt-0.5">
-              Choose a clinical scenario to begin your simulation
+            <p className="text-[14px] font-medium text-gray-400 mt-2">
+              Lorem Ipsum is simply dummy text of the printing and typesetting industry.
             </p>
           </div>
           {/* Profile pill */}
           <div
             className="flex items-center gap-3 rounded-full px-4 py-2"
-            style={{ background: '#f0f0ee' }}
+            style={{ background: '#e5e7eb' }}
           >
-            <span className="text-[14px] font-semibold text-gray-700">William Dawson</span>
+            <span className="text-[14px] font-bold text-gray-900 ml-1">William Dawson</span>
             <div
-              className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 relative"
-              style={{ background: '#d1d5db' }}
+              className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-white"
             >
               <img
                 src="/patient-without-monitor.png"
@@ -417,54 +418,57 @@ export default function CasesPage() {
                 className="w-full h-full object-cover"
                 onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
               />
-              <span className="text-[11px] font-bold text-gray-500 absolute">WD</span>
             </div>
           </div>
         </div>
 
         {/* Search + filter bar */}
-        <div className="flex items-center gap-3 mb-5 flex-shrink-0">
+        <div className="flex items-center gap-4 mb-4 flex-shrink-0">
           {/* Search input */}
-          <div className="relative flex-1 max-w-xs">
+          <div className="relative flex-1 max-w-lg">
             <Search
-              size={15}
-              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ color: '#9ca3af' }}
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400"
             />
             <input
               type="text"
-              placeholder="Search cases..."
+              placeholder="Search"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full rounded-2xl bg-white border border-gray-200 pl-9 pr-4 py-2.5 text-[13px] text-gray-700 placeholder:text-gray-400 outline-none transition-all"
-              style={{
-                boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-              }}
-              onFocus={e => { e.currentTarget.style.borderColor = BLUE; e.currentTarget.style.boxShadow = `0 0 0 3px ${BLUE}18` }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)' }}
+              className="w-full rounded-2xl border-none bg-[#f3f4f6] pl-12 pr-4 py-3.5 text-[15px] text-gray-700 placeholder:text-gray-400 outline-none transition-all"
             />
           </div>
-          {/* Category capsules */}
-          <div className="flex items-center gap-2">
-            {CATEGORIES.map(cat => {
-              const isActive = activeCategory === cat
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className="px-4 py-2 rounded-full text-[12px] font-semibold transition-all"
-                  style={{
-                    background: isActive ? BLUE : 'white',
-                    color: isActive ? 'white' : '#6b7280',
-                    border: isActive ? `1.5px solid ${BLUE}` : '1.5px solid #e5e7eb',
-                    boxShadow: isActive ? `0 2px 8px ${BLUE}35` : '0 1px 4px rgba(0,0,0,0.04)',
-                  }}
-                >
-                  {cat}
-                </button>
-              )
-            })}
+          {/* Select Location */}
+          <div className="relative w-48">
+            <select className="w-full appearance-none rounded-2xl border-none bg-[#f3f4f6] pl-5 pr-10 py-3.5 text-[15px] font-medium text-gray-500 outline-none cursor-pointer">
+              <option value="">Location</option>
+            </select>
+            <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
+          {/* Select Case Type */}
+          <div className="relative w-48">
+            <select className="w-full appearance-none rounded-2xl border-none bg-[#f3f4f6] pl-5 pr-10 py-3.5 text-[15px] font-medium text-gray-500 outline-none cursor-pointer">
+              <option value="">Case Type</option>
+            </select>
+            <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Selected Tags */}
+        <div className="flex items-center gap-3 mb-8 flex-shrink-0">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#eef2ff] text-[#1e1b4b] text-[14px] font-semibold hover:bg-indigo-100 transition-colors">
+            <X size={16} className="text-gray-900" />
+            Emergency
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#eef2ff] text-[#1e1b4b] text-[14px] font-semibold hover:bg-indigo-100 transition-colors">
+            <X size={16} className="text-gray-900" />
+            Chest Pain
+          </button>
+        </div>
+
+        {/* Result Count */}
+        <div className="text-[18px] font-medium text-gray-500 mb-6 flex-shrink-0">
+          We've found <span style={{ color: BLUE, fontWeight: 'bold' }}>{filteredCases.length || 4}</span> Cases!
         </div>
 
         {/* Cases grid */}
@@ -473,89 +477,72 @@ export default function CasesPage() {
           style={{ scrollbarWidth: 'none' }}
         >
           <div
-            className="grid gap-5 pb-4"
+            className="grid gap-6 pb-8"
             style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-              maxWidth: 860,
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
             }}
           >
-            {filteredCases.length === 0 && (
-              <div className="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
-                <Search size={32} className="mb-3 opacity-30" />
-                <p className="text-[14px] font-medium">No cases found</p>
-                <p className="text-[12px] mt-1">Try a different search or category</p>
-              </div>
-            )}
-            {filteredCases.map((c, i) => (
+            {(filteredCases.length > 0 ? filteredCases : CASES).map((c, i) => (
               <article
                 key={c.id}
                 onClick={() => setSelected(c)}
-                className="bg-white rounded-3xl overflow-hidden cursor-pointer"
+                className="bg-white rounded-[24px] overflow-hidden cursor-pointer flex flex-col p-6"
                 style={{
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
-                  border: `1.5px solid ${BLUE}18`,
+                  border: `2px solid #e5e7eb`,
                   animation: `cs-card-appear 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 120}ms both`,
-                  transition: 'transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease',
+                  transition: 'transform 0.25s cubic-bezier(0.34,1.56,0.64,1), border-color 0.25s ease',
                 }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'
-                  ;(e.currentTarget as HTMLElement).style.boxShadow = `0 10px 32px rgba(0,87,255,0.14)`
+                  ;(e.currentTarget as HTMLElement).style.borderColor = '#d1d5db'
                 }}
                 onMouseLeave={e => {
                   (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
-                  ;(e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)'
+                  ;(e.currentTarget as HTMLElement).style.borderColor = '#e5e7eb'
                 }}
               >
-
-                <div className="p-5">
-                  {/* Category badge */}
-                  <div className="mb-3">
-                    <span
-                      className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-                      style={{ background: `${BLUE}12`, color: BLUE }}
-                    >
-                      {c.category}
-                    </span>
+                {/* Header: Image + Info */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-[84px] h-[84px] rounded-xl overflow-hidden bg-gray-200">
+                     <img src="/patient-without-monitor.png" alt="Patient" className="w-full h-full object-cover" />
                   </div>
-
-                  {/* Title */}
-                  <h2 className="text-[15px] font-bold text-gray-900 leading-snug mb-4">{c.title}</h2>
-
-                  {/* Patient row */}
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{ background: `${BLUE}12` }}
-                    >
-                      <User size={16} style={{ color: BLUE }} />
-                    </div>
-                    <div>
-                      <div className="text-[13px] font-semibold text-gray-800">{c.patient}</div>
-                      <div className="text-[11px] text-gray-500">{c.age} yr · {c.weight} kg · {c.gender}</div>
-                    </div>
+                  <div>
+                    <h2 className="text-[18px] font-bold text-gray-900 mb-1">Mr. Will Jacks</h2>
+                    <div className="text-[13px] font-semibold text-gray-800">58 Yr · 82 Kg · Male</div>
                   </div>
+                </div>
 
+                {/* Description */}
+                <p className="text-[13px] text-gray-500 leading-relaxed font-semibold mb-6">
+                  Lorem It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
+                </p>
 
-                  {/* Footer */}
-                  <div
-                    className="flex items-center justify-between mt-4 pt-4"
-                    style={{ borderTop: `1px solid ${BLUE}12` }}
+                {/* Tags */}
+                <div className="flex items-center gap-2 mb-8">
+                  <span className="px-3 py-1 rounded-lg text-[12px] font-bold text-red-500 border border-red-400 bg-red-50/50">
+                    Emergency
+                  </span>
+                  <span className="px-3 py-1 rounded-lg text-[12px] font-bold text-[#f59e0b] border border-[#f59e0b] bg-amber-50/50">
+                    Chest Pain
+                  </span>
+                  <span className="px-2 py-1 rounded-full text-[12px] font-bold text-gray-400 border border-gray-300">
+                    +2
+                  </span>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between mt-auto">
+                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-400">
+                    <Hourglass size={16} />
+                    30mins
+                  </div>
+                  <button
+                    className="text-[14px] font-bold text-white rounded-full px-8 py-2.5 transition-all hover:opacity-90 active:scale-[0.97]"
+                    style={{ background: BLUE }}
+                    onClick={e => { e.stopPropagation(); setSelected(c) }}
                   >
-                    <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
-                      <Clock size={12} />
-                      {c.duration}
-                    </div>
-                    <button
-                      className="text-[13px] font-bold text-white rounded-xl px-5 py-2.5 transition-all hover:opacity-90 active:scale-[0.97]"
-                      style={{
-                        background: BLUE,
-                        boxShadow: `0 3px 12px ${BLUE}45`,
-                      }}
-                      onClick={e => { e.stopPropagation(); setSelected(c) }}
-                    >
-                      View Case
-                    </button>
-                  </div>
+                    Start Now
+                  </button>
                 </div>
               </article>
             ))}
