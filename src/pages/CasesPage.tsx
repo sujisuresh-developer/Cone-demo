@@ -79,7 +79,7 @@ const CASES: CaseCard[] = [
   },
 ]
 
-const CATEGORIES = ['All', 'Cardiology', 'ICU']
+
 
 // ─── Patient Detail Data ────────────────────────────────────────────────────
 const PATIENT_DATA = {
@@ -288,7 +288,7 @@ export default function CasesPage() {
   const [selected, setSelected] = useState<CaseCard | null>(null)
   const [dark, setDark] = useState(false)
   const [search, setSearch] = useState('')
-  const [activeCategory, setActiveCategory] = useState('All')
+  const [activeCategory] = useState('All')
 
   const filteredCases = useMemo(() => {
     return CASES.filter(c => {
