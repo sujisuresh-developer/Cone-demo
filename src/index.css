@@ -581,10 +581,10 @@ body {
 }
 
 /* ── Page transition ── */
-@keyframes page-enter {
+@keyframes page-swipe-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -592,8 +592,23 @@ body {
   }
 }
 
-.page-enter {
-  animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+.page-swipe-up {
+  animation: page-swipe-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes page-swipe-down {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-swipe-down {
+  animation: page-swipe-down 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Sidebar icon enters staggered */
