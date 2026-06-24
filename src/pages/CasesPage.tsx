@@ -8,23 +8,20 @@ import {
   Sun,
   Moon,
   X,
-  ChevronRight,
+
   ChevronDown,
-  User,
+
   Heart,
   Thermometer,
-  Activity,
-  Wind,
+ 
   Droplets,
-  AlertCircle,
-  Clock,
+
   Hourglass,
-  Stethoscope,
-  Pill,
-  Shield,
-  FileText,
+
   Search,
   LogOut,
+  AlertTriangle,
+  ClipboardList
 } from 'lucide-react'
 
 // ─── Shared nav config ──────────────────────────────────────────────────────
@@ -81,20 +78,7 @@ const CASES: CaseCard[] = [
 
 
 
-// ─── Patient Detail Data ────────────────────────────────────────────────────
-const PATIENT_DATA = {
-  hpi: 'Sudden onset substernal crushing chest pain, 9/10 severity. Began 45 minutes prior to arrival. Radiates to left arm and jaw. Associated symptoms: diaphoresis, nausea, dyspnea',
-  vitals: [
-    { label: 'BP',   value: '148/92', unit: 'mmHg',     icon: Activity,    color: '#0057FF' },
-    { label: 'HR',   value: '96',     unit: 'bpm',      icon: Heart,       color: '#0078d7' },
-    { label: 'RR',   value: '18',     unit: '/min',     icon: Wind,        color: '#0099cc' },
-    { label: 'SpO₂', value: '97%',   unit: 'room air', icon: Droplets,    color: '#0057FF' },
-    { label: 'Temp', value: '36.8',  unit: '°C',       icon: Thermometer, color: '#005fcc' },
-  ],
-  pmh: ['Hypertension', 'Hyperlipidemia', 'Tobacco use (30 pack-years)'],
-  medications: ['Lisinopril', 'Atorvastatin'],
-  allergies: 'No known drug allergies',
-}
+
 
 // ─── Patient Detail Slide-in Panel ─────────────────────────────────────────
 function PatientSidebar({
@@ -117,164 +101,147 @@ function PatientSidebar({
 
       {/* Panel */}
       <aside
-        className="fixed top-0 right-0 h-screen bg-white z-50 flex flex-col"
+        className="fixed top-6 right-6 z-50 flex flex-col bg-white overflow-hidden"
         style={{
-          width: 400,
-          boxShadow: '-8px 0 40px rgba(0,87,255,0.12)',
+          width: 420,
+          height: 'calc(100vh - 48px)',
+          boxShadow: '-4px 12px 40px rgba(0,0,0,0.08)',
           animation: 'cs-slide-in 0.35s cubic-bezier(0.16,1,0.3,1)',
+          borderRadius: '24px',
         }}
       >
         {/* Header */}
-        <div
-          className="px-5 pt-5 pb-4 flex items-start justify-between gap-3 flex-shrink-0"
-          style={{ borderBottom: '1px solid #e8f0ff', background: '#f0f7ff' }}
-        >
-          <div className="flex-1 min-w-0">
-            <span
-              className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full mb-2"
-              style={{ background: `${BLUE}18`, color: BLUE }}
-            >
-              {caseItem.category}
-            </span>
-            <h2 className="text-[15px] font-bold text-gray-900 leading-snug">{caseItem.title}</h2>
-            <div className="flex items-center gap-1.5 mt-1.5 text-[12px] text-gray-500">
-              <User size={12} />
-              <span>{caseItem.patient} · {caseItem.age}yr · {caseItem.weight}kg · {caseItem.gender}</span>
+        <div className="px-6 pt-8 pb-4 flex-shrink-0 flex items-center justify-between border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
+              <img src="/patient-without-monitor.png" alt="Patient" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <h2 className="text-[18px] font-bold text-gray-900 mb-0.5">{caseItem.patient}</h2>
+              <div className="text-[13px] text-gray-500 font-medium">
+                {caseItem.gender} • {caseItem.age} Years old
+              </div>
             </div>
           </div>
-          <button
-            className="w-8 h-8 rounded-xl border border-blue-100 bg-white flex items-center justify-center flex-shrink-0 transition-colors hover:bg-blue-50"
-            style={{ color: BLUE }}
-            onClick={onClose}
-          >
-            <X size={15} />
-          </button>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-red-300 bg-red-50 text-red-500 text-[12px] font-bold shadow-sm">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            Critical
+          </div>
         </div>
 
         {/* Body */}
         <div
-          className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-5"
+          className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6"
           style={{ scrollbarWidth: 'none' }}
         >
-          {/* HPI */}
+          {/* Patient Details */}
           <section>
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: BLUE }}>
-              <FileText size={12} />
-              History of Present Illness
+            <h3 className="text-[16px] font-bold text-gray-900 mb-4">Patient Details</h3>
+            <div className="space-y-3 text-[13.5px]">
+              <div className="grid grid-cols-[100px_1fr] gap-4">
+                <span className="font-bold text-gray-800">Blood Type:</span>
+                <span className="text-gray-500">O+(Positive)</span>
+              </div>
+              <div className="grid grid-cols-[100px_1fr] gap-4">
+                <span className="font-bold text-gray-800">Allergies:</span>
+                <span className="text-gray-500">Milk, Penicillin</span>
+              </div>
+              <div className="grid grid-cols-[100px_1fr] gap-4">
+                <span className="font-bold text-gray-800">Diseases:</span>
+                <span className="text-gray-500">Diabetes, Blood Disorder</span>
+              </div>
+              <div className="grid grid-cols-[100px_1fr] gap-4">
+                <span className="font-bold text-gray-800">Height:</span>
+                <span className="text-gray-500">1.78m</span>
+              </div>
+              <div className="grid grid-cols-[100px_1fr] gap-4">
+                <span className="font-bold text-gray-800">Weight:</span>
+                <span className="text-gray-500">{caseItem.weight}kg</span>
+              </div>
+              <div className="grid grid-cols-[100px_1fr] gap-4">
+                <span className="font-bold text-gray-800">Patient ID:</span>
+                <span className="text-gray-500">208898786</span>
+              </div>
             </div>
-            <p
-              className="text-[13px] text-gray-700 leading-relaxed rounded-2xl px-4 py-3"
-              style={{ background: '#f0f7ff', border: `1px solid ${BLUE}25` }}
-            >
-              {PATIENT_DATA.hpi}
-            </p>
           </section>
 
-          {/* Vitals */}
+          {/* Patient Vitals */}
           <section>
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: BLUE }}>
-              <Activity size={12} />
-              Initial Vitals
+            <h3 className="text-[16px] font-bold text-gray-900 mb-4">Patient Vitals</h3>
+            <div className="flex gap-3">
+              {/* Heart Rate */}
+              <div className="flex-1 rounded-2xl bg-[#eff3f8] p-4 flex flex-col items-center justify-center gap-1.5 shadow-sm">
+                <Heart size={18} className="text-[#0057FF] fill-[#0057FF]" />
+                <div className="text-[11px] font-semibold text-gray-500">Heart Rate</div>
+                <div className="text-[16px] font-bold text-gray-900">112 bpm</div>
+              </div>
+              {/* BP */}
+              <div className="flex-1 rounded-2xl bg-[#eff3f8] p-4 flex flex-col items-center justify-center gap-1.5 shadow-sm">
+                <Droplets size={18} className="text-[#0057FF] fill-[#0057FF]" />
+                <div className="text-[11px] font-semibold text-gray-500">BLD pressure</div>
+                <div className="text-[16px] font-bold text-gray-900">158/98</div>
+              </div>
+              {/* Temp */}
+              <div className="flex-1 rounded-2xl bg-[#eff3f8] p-4 flex flex-col items-center justify-center gap-1.5 shadow-sm">
+                <Thermometer size={18} className="text-[#0057FF]" />
+                <div className="text-[11px] font-semibold text-gray-500">Body Temp</div>
+                <div className="text-[16px] font-bold text-gray-900">37.1</div>
+              </div>
             </div>
-            <div
-              className="rounded-2xl p-3 grid grid-cols-3 gap-2"
-              style={{ background: '#e8f0ff', border: `1.5px solid ${BLUE}30` }}
-            >
-              {PATIENT_DATA.vitals.map(({ label, value, unit, icon: Icon, color }) => (
-                <div
-                  key={label}
-                  className="rounded-xl bg-white flex flex-col items-center text-center py-3 px-2"
-                  style={{ border: `1.5px solid ${BLUE}20`, boxShadow: '0 1px 4px rgba(0,87,255,0.06)' }}
-                >
-                  <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center mb-1"
-                    style={{ background: `${color}15` }}
-                  >
-                    <Icon size={14} style={{ color }} />
-                  </div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{label}</div>
-                  <div className="text-[16px] font-bold text-gray-900 leading-tight mt-0.5">{value}</div>
-                  <div className="text-[9px] text-gray-400 mt-0.5">{unit}</div>
+          </section>
+
+          {/* Chief Complaint */}
+          <section>
+            <div className="rounded-2xl border-[1.5px] border-[#fcd34d] p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#fef3c7]">
+                  <AlertTriangle size={13} className="text-[#d97706]" />
                 </div>
-              ))}
+                <h4 className="text-[14px] font-bold text-[#d97706]">Chief Compliant</h4>
+              </div>
+              <p className="text-[13.5px] text-gray-500 leading-relaxed font-medium">
+                Acute, sudden onset of progressive breathing difficulty and <span className="text-[#d97706] font-bold">sharp right-sided chest pain</span> starting approximately 1 hour ago.
+              </p>
             </div>
           </section>
 
-          {/* PMH */}
+          {/* Medical History */}
           <section>
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: BLUE }}>
-              <Clock size={12} />
-              Past Medical History
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {PATIENT_DATA.pmh.map(item => (
-                <span
-                  key={item}
-                  className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
-                  style={{ background: '#e8f0ff', color: BLUE, border: `1px solid ${BLUE}30` }}
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-          </section>
-
-          {/* Medications */}
-          <section>
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: BLUE }}>
-              <Pill size={12} />
-              Medications
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {PATIENT_DATA.medications.map(med => (
-                <span
-                  key={med}
-                  className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
-                  style={{ background: '#dbeafe', color: '#1d4ed8', border: '1px solid #bfdbfe' }}
-                >
-                  {med}
-                </span>
-              ))}
-            </div>
-          </section>
-
-          {/* Allergies */}
-          <section>
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: BLUE }}>
-              <Shield size={12} />
-              Allergies
-            </div>
-            <div
-              className="flex items-center gap-2 text-[13px] font-medium rounded-2xl px-4 py-2.5"
-              style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' }}
-            >
-              <AlertCircle size={14} />
-              {PATIENT_DATA.allergies}
+            <div className="rounded-2xl border-[1.5px] border-[#5eead4] p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#ccfbf1]">
+                  <ClipboardList size={13} className="text-[#0f766e]" />
+                </div>
+                <h4 className="text-[14px] font-bold text-[#0f766e]">Medical History</h4>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {['Hypertension', 'Asthma', 'Tobacco Use', 'Hypertension'].map((item, idx) => (
+                  <span
+                    key={idx}
+                    className="px-3 py-1.5 rounded-full text-[12px] font-bold text-[#0f766e] bg-[#ccfbf1]"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
             </div>
           </section>
         </div>
 
         {/* Footer */}
-        <div
-          className="px-5 py-4 flex-shrink-0"
-          style={{ borderTop: '1px solid #e8f0ff', background: 'white' }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Clock size={13} className="text-gray-400" />
-            <span className="text-[12px] text-gray-500">Estimated duration: {caseItem.duration}</span>
-          </div>
+        <div className="px-6 py-5 flex items-center gap-4 flex-shrink-0 bg-white">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-full py-3.5 text-[15px] font-bold text-[#0057FF] border-[1.5px] border-[#0057FF] transition-all hover:bg-blue-50 active:scale-[0.98]"
+          >
+            Back
+          </button>
           <button
             onClick={onStart}
-            className="w-full flex items-center justify-center gap-3 rounded-2xl text-white font-bold text-[16px] transition-all hover:opacity-90 active:scale-[0.98]"
-            style={{
-              padding: '16px',
-              background: `linear-gradient(135deg, ${BLUE}, #003eb3)`,
-              boxShadow: '0 4px 16px rgba(0,87,255,0.4)',
-            }}
+            className="flex-1 rounded-full py-3.5 text-[15px] font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{ background: '#0057FF', boxShadow: '0 4px 12px rgba(0,87,255,0.3)' }}
           >
-            <Stethoscope size={18} />
-            Start Simulation
-            <ChevronRight size={18} />
+            Start Now
           </button>
         </div>
       </aside>
