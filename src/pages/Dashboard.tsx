@@ -112,7 +112,7 @@ function CalendarWidget() {
 const NAV = [
   { Icon: Home, path: '/dashboard', label: 'Dashboard' },
   { Icon: Bandage, path: '/cases', label: 'Simulation' },
-  { Icon: UserCheck, path: '#', label: 'Reports' },
+  { Icon: UserCheck, path: '/mcq', label: 'MCQ Questions' },
   { Icon: Settings, path: '#', label: 'Settings' },
 ]
 
