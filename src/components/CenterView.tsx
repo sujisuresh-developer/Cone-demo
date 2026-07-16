@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Radio, Pill, Scissors, ClipboardList, FileText } from 'lucide-react'
+import { ClipboardList, FileText } from 'lucide-react'
 import ChatPanel, { AudioControls, type ChatMessage } from './ChatPanel'
 import ReportsModal from './ReportsModal'
-
-export type ActionTab = 'diagnostics' | 'medications' | 'procedures'
+import PatientMedia from './PatientMedia'
 
 type CenterViewProps = {
   chatExpanded: boolean
@@ -12,8 +11,6 @@ type CenterViewProps = {
   onMessageChange: (value: string) => void
   messages: ChatMessage[]
   onSend: () => void
-  activeTab: ActionTab
-  onTabChange: (tab: ActionTab) => void
   performedActions: string[]
   onViewOutcome: (actionId: string) => void
   onViewPatientDetails: () => void
@@ -25,12 +22,6 @@ type CenterViewProps = {
   patientImage: string
 }
 
-const TABS: { id: ActionTab; Icon: typeof Radio; label: string }[] = [
-  { id: 'diagnostics', Icon: Radio, label: 'Diagnostics' },
-  { id: 'medications', Icon: Pill, label: 'Medications' },
-  { id: 'procedures', Icon: Scissors, label: 'Procedures' },
-]
-
 export default function CenterView({
   chatExpanded,
   onToggleChat,
@@ -38,8 +29,6 @@ export default function CenterView({
   onMessageChange,
   messages,
   onSend,
-  activeTab,
-  onTabChange,
   performedActions,
   onViewOutcome,
   onViewPatientDetails,
@@ -75,15 +64,15 @@ export default function CenterView({
     <main className="card-shadow relative flex h-full flex-col overflow-hidden rounded-3xl">
       <div className="absolute inset-0 bg-gray-900">
         {prevImg && (
-          <img
-            src={`/${prevImg}`}
+          <PatientMedia
+            src={prevImg}
             alt="Patient"
             className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
           />
         )}
-        <img
+        <PatientMedia
           key={currentImg}
-          src={`/${currentImg}`}
+          src={currentImg}
           alt="Patient in hospital room"
           className={`absolute inset-0 h-full w-full object-cover object-top animate-fade-in transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
         />
@@ -93,26 +82,7 @@ export default function CenterView({
         />
       </div>
 
-      <div className="relative z-10 flex h-full flex-col justify-between">
-        {/* Top navigation toggle */}
-        <div className="flex justify-center pt-6">
-          <div className="flex items-center gap-1 rounded-[10px] bg-white px-2 py-1.5 card-shadow">
-            {TABS.map(({ id, Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => onTabChange(id)}
-                className={`flex h-9 w-9 items-center justify-center rounded-[10px] transition-all duration-300 ${activeTab === id
-                    ? 'bg-primary text-white'
-                    : 'text-gray-500 hover:bg-gray-50'
-                  }`}
-              >
-                <Icon className="h-4 w-4" strokeWidth={activeTab === id ? 2 : 1.5} />
-              </button>
-            ))}
-          </div>
-        </div>
-
+      <div className="relative z-10 flex h-full flex-col justify-end">
         {/* Audio controls & Chat Panel at the bottom */}
         <div className="w-full flex flex-col items-center pb-6">
           {/* Audio controls – visible only when collapsed */}

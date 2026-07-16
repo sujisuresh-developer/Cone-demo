@@ -9,16 +9,17 @@ import VitalsDetailModal, {
   getBpValue,
   getPlethValue,
   getRespValue,
-  getTempVal,
 } from './VitalsDetailModal'
 import { type Vitals, type ScenarioMode } from '../App'
 
+// Pneumothorax is a respiratory/hemodynamic presentation — Temperature never moves meaningfully
+// across any state in this case (36.6-37.4 throughout, arrival through death) and isn't part of
+// the clinical picture being taught here, so it's deliberately left off this list.
 const PLACEHOLDER_VITALS = [
   { label: 'Heart Rate', unit: 'bpm', normal: '60-100' },
   { label: 'Blood Pressure', unit: 'mmHg', normal: '90-120/60-80' },
   { label: 'SpO2', unit: '%', normal: '95-100' },
   { label: 'Resp Rate', unit: '/min', normal: '12-20' },
-  { label: 'Temperature', unit: '°C', normal: '36.1-37.2' },
 ]
 
 function PlaceholderVitalCard({
@@ -148,8 +149,6 @@ function LiveVitalCard({
             val = getPlethValue(tx, vitals.hr)
           } else if (vitalIndex === 3) {
             val = getRespValue(tx, vitals.rr)
-          } else if (vitalIndex === 4) {
-            val = getTempVal(tx)
           }
           yPoints[currIdx] = val
         }
@@ -281,16 +280,6 @@ export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown,
       statusColor: vitals.rr >= 30 ? 'text-red-500' : vitals.rr > 20 ? 'text-orange-500' : 'text-green-600',
       waveColor: vitals.rr >= 30 ? '#ef4444' : vitals.rr > 20 ? '#f97316' : '#22c55e',
       waveSpeed: vitals.rr >= 30 ? 0.7 : vitals.rr > 20 ? 0.55 : 0.35,
-    },
-    {
-      label: 'Temperature',
-      value: String(vitals.temp),
-      unit: '°C',
-      status: 'Within Range',
-      border: 'border-green-400',
-      statusColor: 'text-green-600',
-      waveColor: '#22c55e',
-      waveSpeed: 0.25,
     },
   ]
 

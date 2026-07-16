@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { X, Activity } from 'lucide-react'
 import { type Vitals, type ScenarioMode } from '../App'
+import { PATIENT } from '../simulation/pneumothoraxCase'
 
 /* ───────── mathematical waveform generators ───────── */
 
@@ -126,12 +127,6 @@ export function getRespValue(t: number, rr: number): number {
     v = 0
   }
   return v
-}
-
-export function getTempVal(t: number): number {
-  const slowOsc = Math.sin((2 * Math.PI * t) / 8.0) * 0.15
-  const noise = (Math.sin(2.3 * t) + Math.cos(5.7 * t)) * 0.02
-  return 0.5 + slowOsc + noise
 }
 
 /* ───────── types ───────── */
@@ -414,7 +409,7 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
             <div>
               <h2 className="vitals-title">Live Vital Signs Monitor</h2>
               <p className="vitals-subtitle">
-                Patient: Mr. Will Jacks &nbsp;·&nbsp; 58 Yr &nbsp;·&nbsp; Male
+                Patient: {PATIENT.name} &nbsp;·&nbsp; {PATIENT.age} Yr &nbsp;·&nbsp; {PATIENT.gender}
               </p>
             </div>
           </div>
@@ -527,19 +522,6 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
                 }`}>
                   {vitals.rr >= 30 ? 'Severe Tachypnea' : vitals.rr > 20 ? 'Tachypneic' : 'Within Range'}
                 </span>
-              </div>
-            </div>
-
-            {/* Temp */}
-            <div className="vitals-info-card vitals-info-temp">
-              <div className="vitals-info-top">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">TEMP</span>
-                <span className="text-[10px] text-gray-400 font-medium">°C</span>
-              </div>
-              <div className="vitals-info-value !text-[#9333ea]">{vitals.temp}</div>
-              <div className="vitals-info-meta text-gray-400">Core</div>
-              <div className="vitals-info-detail text-gray-600">
-                <span className="vitals-info-status vitals-status-ok">Normal</span>
               </div>
             </div>
           </div>

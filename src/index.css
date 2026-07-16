@@ -335,10 +335,6 @@ body {
   background: linear-gradient(135deg, rgba(202, 138, 4, 0.06) 0%, rgba(202, 138, 4, 0.01) 100%);
   color: #ca8a04;
 }
-.vitals-info-temp {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.06) 0%, rgba(168, 85, 247, 0.01) 100%);
-  color: #9333ea;
-}
 
 /* â”€â”€â”€ Reports Modal â”€â”€â”€ */
 

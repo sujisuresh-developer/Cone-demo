@@ -4,17 +4,18 @@ import {
   X,
   ChevronDown,
   ChevronUp,
-  AlertTriangle,
   Lightbulb,
   ArrowRight,
   Home,
   CheckCircle,
 } from 'lucide-react'
+import type { ScoreBreakdownEntry } from '../simulation/useCaseEngine'
 
 type Props = {
   open: boolean
   onClose: () => void
   endReason: 'handoff' | 'timeout'
+  caseStatus: 'success' | 'partial' | 'failed'
   score: number
   timeRemainingStr: string
   wrongMovePenaltyStr: string
@@ -22,7 +23,7 @@ type Props = {
   decisionSpeedPct: number
   guidelineAdherencePct: number
   interventionTimePct: number
-  deductions: string[]
+  scoreBreakdown: ScoreBreakdownEntry[]
   hintsUsed: string[]
 }
 
@@ -30,6 +31,7 @@ export default function CaseSummaryModal({
   open,
   onClose,
   endReason,
+  caseStatus,
   score,
   timeRemainingStr,
   wrongMovePenaltyStr,
@@ -37,10 +39,9 @@ export default function CaseSummaryModal({
   decisionSpeedPct,
   guidelineAdherencePct,
   interventionTimePct,
-  deductions,
+  scoreBreakdown,
   hintsUsed,
 }: Props) {
-  const [deductionsExpanded, setDeductionsExpanded] = useState(false)
   const [hintsExpanded, setHintsExpanded] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -53,7 +54,8 @@ export default function CaseSummaryModal({
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (score / 100) * circumference
 
-  const isSuccess = endReason === 'handoff'
+  const isSuccess = caseStatus !== 'failed'
+  const statusLabel = caseStatus === 'success' ? 'Success' : caseStatus === 'partial' ? 'Partial Success' : 'Failed'
 
   return (
     <div
@@ -84,7 +86,7 @@ export default function CaseSummaryModal({
               }`}
             >
               <CheckCircle size={12} className="fill-current" />
-              <span>{isSuccess ? 'Proficient' : 'Failed / Timeout'}</span>
+              <span>{statusLabel}</span>
             </div>
           </div>
 
@@ -126,7 +128,7 @@ export default function CaseSummaryModal({
             {isSuccess ? 'Well Done, Karthik S' : 'Simulation Failed'}
           </h2>
           <p className="text-center text-[12px] text-gray-400 font-medium mt-0.5 mb-5">
-            ICU deterioration assessment · Session ended
+            Tension Pneumothorax · {endReason === 'timeout' ? 'Time expired' : 'Session ended'}
           </p>
 
           {/* Metrics Row (3 Colored Cards) */}
@@ -210,37 +212,38 @@ export default function CaseSummaryModal({
             </div>
           </div>
 
+          {/* Score Breakdown — every scored decision, in order, positive and negative */}
+          <div className="border-t border-gray-100 pt-4 mb-4">
+            <h3 className="text-[12px] font-bold text-gray-800 mb-3">Score breakdown</h3>
+            {scoreBreakdown.length > 0 ? (
+              <div className="border border-gray-100 rounded-xl overflow-hidden divide-y divide-gray-100">
+                {scoreBreakdown.map((entry, index) => (
+                  <div key={index} className="flex items-start justify-between gap-3 px-3.5 py-2.5">
+                    <div className="min-w-0">
+                      <p className="text-[11.5px] font-semibold text-gray-700">{entry.label}</p>
+                      {entry.note && <p className="text-[10.5px] text-gray-400 mt-0.5 leading-snug">{entry.note}</p>}
+                    </div>
+                    <span
+                      className={`shrink-0 text-[12px] font-extrabold ${entry.points > 0 ? 'text-emerald-600' : entry.points < 0 ? 'text-red-600' : 'text-gray-400'}`}
+                    >
+                      {entry.points > 0 ? '+' : ''}{entry.points}
+                    </span>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between px-3.5 py-2.5 bg-gray-50/70">
+                  <span className="text-[11.5px] font-bold text-gray-800">Total</span>
+                  <span className="text-[12px] font-extrabold text-gray-900">{score}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="border border-gray-100 rounded-xl px-3.5 py-4 text-[11px] text-gray-400 italic text-center">
+                No scored actions yet.
+              </div>
+            )}
+          </div>
+
           {/* Expandable Accordions */}
           <div className="space-y-1.5 border-t border-gray-100 pt-4 mb-4">
-            
-            {/* Deduction Log */}
-            <div className="border border-gray-100 rounded-xl overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setDeductionsExpanded(!deductionsExpanded)}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 bg-gray-50/50 hover:bg-gray-50 text-[12px] font-bold text-gray-700 text-left transition-colors"
-              >
-                <div className="flex items-center gap-1.5">
-                  <AlertTriangle size={14} className="text-red-500" />
-                  <span>Deduction Log</span>
-                </div>
-                {deductionsExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              </button>
-              {deductionsExpanded && (
-                <div className="px-3.5 py-2.5 bg-white border-t border-gray-100 text-[11px] text-gray-500 space-y-1.5 max-h-[140px] overflow-y-auto">
-                  {deductions.length > 0 ? (
-                    deductions.map((d, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <span className="text-red-500 font-bold shrink-0">•</span>
-                        <span>{d}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-gray-400 italic text-center py-1">No deductions logged! Perfect score.</div>
-                  )}
-                </div>
-              )}
-            </div>
 
             {/* Hint Summary */}
             <div className="border border-gray-100 rounded-xl overflow-hidden">
