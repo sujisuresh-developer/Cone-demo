@@ -6,7 +6,6 @@ import {
 } from 'lucide-react'
 import VitalsDetailModal, {
   getEcgValue,
-  getBpValue,
   getPlethValue,
   getRespValue,
 } from './VitalsDetailModal'
@@ -16,20 +15,22 @@ import { type Vitals, type ScenarioMode } from '../App'
 // across any state in this case (36.6-37.4 throughout, arrival through death) and isn't part of
 // the clinical picture being taught here, so it's deliberately left off this list.
 const PLACEHOLDER_VITALS = [
-  { label: 'Heart Rate', unit: 'bpm', normal: '60-100' },
-  { label: 'Blood Pressure', unit: 'mmHg', normal: '90-120/60-80' },
-  { label: 'SpO2', unit: '%', normal: '95-100' },
-  { label: 'Resp Rate', unit: '/min', normal: '12-20' },
+  { label: 'Heart Rate', unit: 'bpm', normal: '60-100', showTrend: true },
+  { label: 'Blood Pressure', unit: 'mmHg', normal: '90-120/60-80', showTrend: false },
+  { label: 'SpO2', unit: '%', normal: '95-100', showTrend: true },
+  { label: 'Resp Rate', unit: '/min', normal: '12-20', showTrend: true },
 ]
 
 function PlaceholderVitalCard({
   label,
   unit,
   normal,
+  showTrend,
 }: {
   label: string
   unit: string
   normal: string
+  showTrend: boolean
 }) {
   return (
     <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-2.5">
@@ -40,8 +41,8 @@ function PlaceholderVitalCard({
           <span className="text-[11px] font-normal text-gray-400">{unit}</span>
         </span>
       </div>
-      <div className="vital-dots mt-1 h-10 w-full rounded" />
-      <p className="mt-0.5 text-right text-[9px] text-gray-400">Normal: {normal}</p>
+      {showTrend && <div className="vital-dots mt-1 h-10 w-full rounded" />}
+      <p className={`${showTrend ? 'mt-0.5' : 'mt-2'} text-right text-[9px] text-gray-400`}>Normal: {normal}</p>
     </div>
   )
 }
@@ -58,6 +59,7 @@ function LiveVitalCard({
   vitalIndex,
   vitals,
   scenario,
+  showTrend = true,
 }: {
   label: string
   value: string
@@ -69,6 +71,7 @@ function LiveVitalCard({
   vitalIndex: number
   vitals: Vitals
   scenario?: ScenarioMode
+  showTrend?: boolean
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef(0)
@@ -81,6 +84,7 @@ function LiveVitalCard({
   })
 
   useEffect(() => {
+    if (!showTrend) return
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -143,8 +147,6 @@ function LiveVitalCard({
           let val = 0
           if (vitalIndex === 0) {
             val = getEcgValue(tx, vitals.hr, scenario)
-          } else if (vitalIndex === 1) {
-            val = getBpValue(tx, vitals.hr)
           } else if (vitalIndex === 2) {
             val = getPlethValue(tx, vitals.hr)
           } else if (vitalIndex === 3) {
@@ -204,7 +206,7 @@ function LiveVitalCard({
 
     animRef.current = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(animRef.current)
-  }, [waveColor, vitalIndex, vitals, scenario])
+  }, [showTrend, waveColor, vitalIndex, vitals, scenario])
 
   return (
     <div className={`rounded-xl border-2 ${border} bg-white px-4 py-2.5`}>
@@ -215,12 +217,14 @@ function LiveVitalCard({
           <span className="text-[11px] font-normal text-gray-500">{unit}</span>
         </span>
       </div>
-      <canvas
-        ref={canvasRef}
-        className="mt-1.5 h-10 w-full rounded"
-        style={{ display: 'block' }}
-      />
-      <p className={`mt-0.5 text-right text-[9px] font-semibold ${statusColor}`}>
+      {showTrend && (
+        <canvas
+          ref={canvasRef}
+          className="mt-1.5 h-10 w-full rounded"
+          style={{ display: 'block' }}
+        />
+      )}
+      <p className={`${showTrend ? 'mt-0.5' : 'mt-2'} text-right text-[9px] font-semibold ${statusColor}`}>
         {status}
       </p>
     </div>
@@ -260,6 +264,7 @@ export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown,
       statusColor: vitals.bp.startsWith('70') || vitals.bp.startsWith('65') || vitals.bp.startsWith('92') || vitals.bp.startsWith('86') ? 'text-red-500' : vitals.bp === '110/70' ? 'text-green-600' : 'text-yellow-600',
       waveColor: vitals.bp.startsWith('70') || vitals.bp.startsWith('65') || vitals.bp.startsWith('92') || vitals.bp.startsWith('86') ? '#ef4444' : vitals.bp === '110/70' ? '#22c55e' : '#eab308',
       waveSpeed: vitals.bp === '110/70' ? 0.45 : 0.6,
+      showTrend: false,
     },
     {
       label: 'SpO2',
