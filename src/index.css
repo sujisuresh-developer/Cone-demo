@@ -88,255 +88,435 @@ body {
               opacity 0.4s ease-in-out;
 }
 
-/* â”€â”€â”€ Vitals Detail Modal â”€â”€â”€ */
+/* ─── Vitals Detail Modal — ICU Bedside Monitor ─── */
 
-.vitals-modal-overlay {
+/* The photo remains the physical monitor frame; this layer only occupies its display aperture. */
+.monitor-frame { position: relative; width: 100%; aspect-ratio: 3 / 2; }
+.monitor-photo { display: block; width: 100%; height: 100%; object-fit: contain; }
+.monitor-screen { position: absolute; left: 21.5%; top: 17.9%; width: 56.3%; height: 51.4%; overflow: hidden; background: #000; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.monitor-screen-off { display: grid; place-items: center; color: #557070; font-size: 12px; }
+.monitor-topbar { height: 8%; display: flex; align-items: center; justify-content: space-between; padding: 0 3%; border-bottom: 1px solid #142225; color: #b8c9c9; font-size: clamp(5px, 0.7cqw, 12px); font-weight: 700; }
+.monitor-live { color: #39ff14; display: flex; align-items: center; gap: 4px; }
+.monitor-live i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+.monitor-body { height: 92%; display: grid; grid-template-columns: minmax(0, 3fr) minmax(74px, 1fr); }
+.monitor-waves { display: grid; grid-template-rows: repeat(4, 1fr); border-right: 1px solid #183034; }
+.monitor-wave { position: relative; min-height: 0; border-bottom: 1px solid #102023; background-image: radial-gradient(rgba(57, 255, 20, 0.17) 0.55px, transparent 0.7px); background-size: 10px 10px; }
+.monitor-wave:last-child { border-bottom: 0; }
+.monitor-canvas { display: block; width: 100%; height: 100%; }
+.monitor-wave-label, .monitor-wave-scale { position: absolute; z-index: 1; pointer-events: none; font-size: clamp(5px, 0.82cqw, 14px); font-weight: 700; text-shadow: 0 0 5px currentColor; }
+.monitor-wave-label { top: 7%; left: 4%; }
+.monitor-wave-scale { right: 2.5%; font-size: clamp(4px, 0.58cqw, 10px); }
+.monitor-wave-high { top: 7%; }
+.monitor-wave-low { bottom: 7%; }
+.monitor-numbers { display: grid; grid-template-rows: repeat(5, 1fr); background: #000; }
+.monitor-num { min-height: 0; padding: 5% 8%; border-bottom: 1px solid #183034; display: flex; flex-direction: column; justify-content: space-between; }
+.monitor-num:last-child { border-bottom: 0; }
+.monitor-num-label { font-size: clamp(5px, 0.85cqw, 15px); font-weight: 700; }
+.monitor-num-label small { float: right; font: inherit; font-size: 72%; }
+.monitor-value-row { display: flex; align-items: baseline; justify-content: space-between; min-height: 0; }
+.monitor-num-value { font-size: clamp(13px, 4.5cqw, 76px); font-weight: 700; line-height: .82; font-variant-numeric: tabular-nums; text-shadow: 0 0 10px currentColor; }
+.monitor-unit, .monitor-limits { font-size: clamp(4px, 0.62cqw, 11px); font-weight: 700; }
+.monitor-limits { line-height: 1.25; text-align: right; }
+.monitor-num-hr { color: #39ff14; }
+.monitor-num-spo2 { color: #12b8ff; }
+.monitor-num-bp { color: #ff4040; }
+.monitor-num-bp-value { font-size: clamp(10px, 2.85cqw, 48px); }
+.monitor-num-rr { color: #ffe000; }
+.monitor-num-temp { color: #c678ff; }
+
+.icu-overlay {
   position: fixed;
   inset: 0;
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0);
-  backdrop-filter: blur(0px);
-  transition: background 0.35s ease, backdrop-filter 0.35s ease;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.icu-overlay-in {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.vitals-modal-overlay.vitals-modal-visible {
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
+.icu-modal-frame {
+  position: relative;
+  /* 1.5 aspect ratio frame matching the patient-monitor.png hardware frame */
+  width: min(92vw, 138vh);
+  height: min(61.3vw, 92vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.vitals-modal-content {
-  width: 92vw;
-  max-width: 840px;
-  height: 80vh;
-  max-height: 720px;
-  background: #ffffff;
-  border-radius: 20px;
-  border: 1px solid #e5e7eb;
-  box-shadow:
-    0 10px 50px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(0, 0, 0, 0.02);
+.icu-monitor-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Placed exactly over the blank screen area of patient-monitor.png */
+.icu-screen {
+  position: absolute;
+  left: 21.5%;
+  top: 17.9%;
+  width: 56.3%;
+  height: 51.4%;
+  background: #000000;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transform: scale(0.92) translateY(20px);
-  opacity: 0;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.35s ease;
+  border-radius: 1.2cqw;
+  container-type: size; /* establishes container context for relative scaling */
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-.vitals-modal-content.vitals-modal-content-visible {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-}
-
-/* Header */
-.vitals-modal-header {
-  display: flex;
+/* Header styled with container query units */
+.icu-header {
+  height: 7.5cqh;
+  background: #000000;
+  border-bottom: 1px solid #111a1c;
+  display: grid;
+  grid-template-columns: .8fr .8fr .8fr minmax(0, 2.2fr);
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  padding: 0 2cqw;
+  color: #c8d6d2;
   flex-shrink: 0;
 }
-
-.vitals-header-left {
+.icu-hcell {
+  font-size: 2.2cqh;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0 2cqw;
+  border-right: 1px solid #111a1c;
+  height: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }
-
-.vitals-header-icon {
-  width: 28px;
-  height: 28px;
-  color: #22c55e;
-  filter: drop-shadow(0 2px 4px rgba(34, 197, 94, 0.2));
+.icu-hcell-wide {
+  justify-content: center;
 }
-
-.vitals-title {
-  font-size: 17px;
+.icu-hcell-clock {
+  border-right: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2cqw;
+  color: #c8d6d2;
+}
+.icu-date {
+  font-size: 2.2cqh;
+  letter-spacing: 0.06em;
+}
+.icu-time {
+  font-size: 2.6cqh;
   font-weight: 700;
-  color: #111827;
-  margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.08em;
 }
-
-.vitals-subtitle {
-  font-size: 12px;
-  color: #6b7280;
-  margin: 2px 0 0;
-}
-
-.vitals-close-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  color: #6b7280;
+.icu-xbtn {
+  position: absolute;
+  top: 3.2%;
+  right: 3.2%;
+  z-index: 2;
+  width: clamp(26px, 2.5vw, 40px);
+  height: clamp(26px, 2.5vw, 40px);
+  border-radius: 4px;
+  border: 1px solid #2e3f42;
+  background: #0d1618;
+  color: #7a9090;
+  font-size: clamp(14px, 1.4vw, 22px);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+}
+.icu-xbtn:hover {
+  background: #1a2a2e;
+  color: #ffffff;
+  border-color: #4a6668;
 }
 
-.vitals-close-btn:hover {
-  background: #f3f4f6;
-  color: #1f2937;
-  border-color: #d1d5db;
-}
-
-/* Body */
-.vitals-modal-body {
+/* Body layout */
+.icu-body {
   flex: 1;
-  display: flex;
   min-height: 0;
-  padding: 16px;
-  gap: 16px;
-}
-
-/* Waveforms area */
-.vitals-waveforms {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.vitals-waveform-row {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  position: relative;
-  border-radius: 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 25.5cqw;
   overflow: hidden;
 }
 
-.vitals-waveform-label {
-  position: absolute;
-  top: 6px;
-  left: 10px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  z-index: 2;
-  text-shadow: 0 0 10px currentColor;
-  opacity: 0.85;
+/* Waveforms */
+.icu-waves {
+  display: grid;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  height: 100%;
+  border-right: 1px solid #1a2a2c;
+  background: #000000;
+  overflow: hidden;
 }
-
-.vitals-canvas {
+.icu-wave-row {
+  min-height: 0;
+  position: relative;
+  border-bottom: 1px solid #0e1e20;
+}
+.icu-wave-row:last-child {
+  border-bottom: none;
+}
+.icu-wave-meta {
+  position: absolute;
+  top: 1.5cqh;
+  left: 3cqw;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  line-height: 1.2;
+}
+.icu-wave-lbl {
+  font-size: 3.2cqh;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 6px currentColor;
+}
+.icu-wave-cal-box {
+  display: flex;
+  align-items: center;
+  gap: 0.8cqw;
+  margin-top: 0.5cqh;
+}
+.icu-cal-svg {
+  width: 3.8cqw;
+  height: 2.8cqh;
+}
+.icu-wave-cal-text {
+  font-size: 2.2cqh;
+  opacity: 0.9;
+}
+.icu-wave-scale {
+  position: absolute;
+  right: 2cqw;
+  top: 1.5cqh;
+  bottom: 1.5cqh;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 2.2cqh;
+  font-weight: 600;
+  opacity: 0.8;
+  pointer-events: none;
+}
+.icu-canvas {
   width: 100%;
   height: 100%;
   display: block;
 }
 
-/* Info panels */
-.vitals-info-panels {
-  width: 200px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+/* Numerics Panel */
+.icu-nums {
+  display: grid;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  height: 100%;
+  background: #000000;
+  overflow: hidden;
 }
-
-.vitals-info-card {
-  flex: 1;
-  border-radius: 12px;
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border: 1.5px solid #e2e8f0;
-  transition: border-color 0.3s ease;
+.icu-ncard {
   min-height: 0;
+  border-bottom: 1px solid #0e1e20;
+  padding: 0.9cqh 2cqw;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
 }
-
-.vitals-info-card:hover {
-  border-color: #cbd5e1;
+.icu-ncard:last-child {
+  border-bottom: none;
 }
-
-.vitals-info-top {
+.icu-ntop {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2px;
+  align-items: flex-start;
+  line-height: 1.2;
+  min-width: 0;
 }
-
-.vitals-info-label {
-  font-size: 11px;
+.icu-nlbl {
+  font-size: 2.4cqh;
   font-weight: 700;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
-
-.vitals-info-sublabel {
-  font-size: 10px;
-  opacity: 0.5;
+.icu-nheart {
+  display: flex;
+  align-items: center;
 }
-
-.vitals-info-value {
-  font-size: 32px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.03em;
+.icu-heart-svg {
+  width: 2.4cqh;
+  height: 2.4cqh;
+  animation: icu-beat 0.85s ease infinite;
+}
+@keyframes icu-beat {
+  0%, 100% { transform: scale(1); }
+  35% { transform: scale(1.25); }
+}
+.icu-nval-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex: 1;
+}
+.icu-nval {
+  font-size: min(10cqh, 14cqw);
+  font-weight: 700;
+  line-height: 0.9;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px currentColor;
+  white-space: nowrap;
 }
-
-.vitals-info-unit {
-  font-size: 16px;
-  font-weight: 500;
-  opacity: 0.6;
+.icu-nunit {
+  font-size: 2.2cqh;
+  color: inherit;
+  align-self: flex-end;
+  line-height: 1;
+  margin-bottom: 0.8cqh;
 }
-
-.vitals-info-meta {
-  font-size: 10px;
+.icu-nunit-top {
+  font-size: 2.2cqh;
+  color: inherit;
+  opacity: 0.8;
+}
+.icu-nlimits {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 2cqh;
+  color: inherit;
+  line-height: 1.2;
+}
+.icu-nlim-sep {
+  border-top: 1px solid currentColor;
   opacity: 0.4;
-  margin-top: 1px;
+  width: 3.5cqw;
+  margin: 0.4cqh 0;
 }
 
-.vitals-info-detail {
-  font-size: 10px;
-  margin-top: 3px;
-  line-height: 1.3;
-  opacity: 0.7;
+/* NIBP Layout */
+.icu-nbp-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8cqw;
+  flex: 1;
+  margin-top: 0.8cqh;
 }
-
-.vitals-info-status {
+.icu-nbp {
+  font-size: min(7.2cqh, 12cqw);
+  font-weight: 700;
+  color: #ff4040;
+  text-shadow: 0 0 12px #ff4040;
+  line-height: 0.9;
+  white-space: nowrap;
+}
+.icu-nmap {
+  font-size: min(4.2cqh, 7cqw);
   font-weight: 600;
-  font-size: 10px;
+  color: #ff4040;
+  text-shadow: 0 0 10px #ff4040;
+}
+.icu-nbp-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 2cqh;
+  color: #ff4040;
+  opacity: 0.9;
+  margin-bottom: 0.8cqh;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.vitals-status-ok { color: #22c55e; }
+/* Color schemes matching reference */
+.icu-hr { color: #39ff14; }
+.icu-spo2 { color: #12b8ff; }
+.icu-nibp { color: #ff4040; }
+.icu-rr { color: #ffe000; }
+.icu-temp { color: #c678ff; }
+
+/* Toolbar */
+.icu-toolbar {
+  height: 8.5cqh;
+  background: #000000;
+  border-top: 1px solid #1a2a2c;
+  display: flex;
+  flex-shrink: 0;
+}
+.icu-tbtn {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #1a2a2c;
+  color: #7a9090;
+  font-family: inherit;
+  font-size: 1.8cqh;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.3;
+  transition: all 0.15s ease;
+  overflow: hidden;
+}
+.icu-tbtn:last-child {
+  border-right: none;
+}
+.icu-tbtn:hover {
+  background: #0d1618;
+  color: #ffffff;
+}
+.icu-tbtn-circle {
+  font-size: 2.2cqh;
+  margin-top: 0.4cqh;
+  color: #7a9090;
+}
+.icu-tbtn-hi {
+  color: #12b8ff;
+  font-weight: 700;
+  margin-top: 0.4cqh;
+}
+.icu-tbtn-menu {
+  font-size: 2.5cqh;
+  margin-top: 0.4cqh;
+}
+
+/* Small screen sizes / Mobile scale down */
+@media (max-width: 768px) {
+  .icu-body {
+    grid-template-columns: minmax(0, 1fr) 28cqw;
+  }
+}
+
+/* ─── stub selectors kept to avoid stale-reference errors ─── */
+.vitals-modal-overlay { display: none; }
+.vitals-modal-overlay.vitals-modal-visible { display: none; }
+.vitals-status-ok  { color: #22c55e; }
 .vitals-status-warn { color: #fbbf24; }
 .vitals-status-danger { color: #ef4444; }
 
-/* Card color themes */
-.vitals-info-ecg {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.06) 0%, rgba(34, 197, 94, 0.01) 100%);
-  color: #16a34a;
-}
-.vitals-info-bp {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, rgba(239, 68, 68, 0.01) 100%);
-  color: #dc2626;
-}
-.vitals-info-spo2 {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.06) 0%, rgba(59, 130, 246, 0.01) 100%);
-  color: #2563eb;
-}
-.vitals-info-resp {
-  background: linear-gradient(135deg, rgba(202, 138, 4, 0.06) 0%, rgba(202, 138, 4, 0.01) 100%);
-  color: #ca8a04;
-}
-
-/* â”€â”€â”€ Reports Modal â”€â”€â”€ */
+/* ─── Reports Modal ─── */
 
 .reports-modal-overlay {
   position: fixed;
