@@ -4,7 +4,7 @@ import { ACTIONS, PATIENT } from '../simulation/pneumothoraxCase'
 import PatientMedia from './PatientMedia'
 
 /** Diagnostics actions that open a rich result panel (OutcomeModal) instead of just logging "Done". */
-export const OUTCOME_ACTION_IDS = new Set(['pocus', 'chest-xray'])
+export const OUTCOME_ACTION_IDS = new Set(['pocus', 'chest-xray', 'blood-panel', 'troponin'])
 
 function formatTimeLabel(seconds: number): string {
   if (seconds < 60) return `${seconds}s`
