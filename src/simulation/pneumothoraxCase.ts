@@ -103,7 +103,7 @@ export const PATIENT = {
 
 export const CASE_CONFIG = {
   title: 'Pneumothorax — Large Branching Emergency',
-  totalTimeSeconds: 1200,
+  totalTimeSeconds: 2400,
 }
 
 export const STATES: Record<StateId, CaseState> = {

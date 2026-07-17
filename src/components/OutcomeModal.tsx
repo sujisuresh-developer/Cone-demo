@@ -93,6 +93,10 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
     title = 'POCUS (Lung Ultrasound)'
   } else if (actionId === 'chest-xray') {
     title = 'Chest X-Ray'
+  } else if (actionId === 'blood-panel') {
+    title = 'Basic Blood Panel'
+  } else if (actionId === 'troponin') {
+    title = 'Troponin Test'
   }
 
   return (
@@ -220,6 +224,56 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
                 <span className="text-[11.5px] font-bold text-gray-800 block">Interpretation Note</span>
                 <p className="text-[11px] leading-relaxed text-gray-600">
                   Portable chest radiograph confirms a right-sided pneumothorax. Absent pulmonary vessels at the periphery confirm volume loss.
+                </p>
+              </div>
+
+              <ObservationQuestion actionId={actionId} />
+            </div>
+          )}
+
+          {/* Basic Blood Panel */}
+          {actionId === 'blood-panel' && (
+            <div className="space-y-3">
+              <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[340px] overflow-y-auto">
+                <img src="/action-images/basic-blood-test-result.webp" alt="Basic Blood Panel Result" className="w-full h-auto block" />
+              </div>
+
+              <div className="border border-purple-100 rounded-xl p-2.5 bg-purple-50/40">
+                <span className="text-purple-600 font-bold block mb-0.5 text-[11px]">Routine Bloods — Unremarkable</span>
+                <span className="text-gray-600 leading-normal block text-[10.5px]">
+                  Routine bloods unremarkable — not diagnostic for pneumothorax; this route delays diagnosis.
+                </span>
+              </div>
+
+              <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
+                <span className="text-[11.5px] font-bold text-gray-800 block">Interpretation Note</span>
+                <p className="text-[11px] leading-relaxed text-gray-600">
+                  A normal blood count and chemistry panel neither confirms nor excludes a pneumothorax — imaging or bedside ultrasound is required to make the diagnosis.
+                </p>
+              </div>
+
+              <ObservationQuestion actionId={actionId} />
+            </div>
+          )}
+
+          {/* Troponin Test */}
+          {actionId === 'troponin' && (
+            <div className="space-y-3">
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <img src="/action-images/troponin_result.png" alt="Troponin Test Result" className="w-full h-auto block" />
+              </div>
+
+              <div className="border border-purple-100 rounded-xl p-2.5 bg-purple-50/40">
+                <span className="text-purple-600 font-bold block mb-0.5 text-[11px]">Troponin — Normal</span>
+                <span className="text-gray-600 leading-normal block text-[10.5px]">
+                  Troponin negative — argues against acute coronary syndrome.
+                </span>
+              </div>
+
+              <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
+                <span className="text-[11.5px] font-bold text-gray-800 block">Interpretation Note</span>
+                <p className="text-[11px] leading-relaxed text-gray-600">
+                  A normal troponin helps exclude an acute cardiac event but says nothing about the chest — it isn't diagnostic for pneumothorax and shouldn't delay confirmatory imaging.
                 </p>
               </div>
 

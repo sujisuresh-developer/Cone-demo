@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import LeftSidebar from './components/LeftSidebar'
 import CenterView from './components/CenterView'
 import RightSidebar from './components/RightSidebar'
@@ -14,17 +14,63 @@ import { CLINICAL_HINTS, type Vitals } from './simulation/pneumothoraxCase'
 export type ScenarioMode = 'pneumothorax' | 'pe_trap' | 'stemi'
 export type { Vitals }
 
-/** Full-screen overlay shown while an action is "in progress", keyed by action id. */
+/** Full-screen overlay shown for 3s while an action is "in progress", keyed by action id. */
 const VIDEO_OVERRIDE_BY_ACTION: Record<string, string> = {
-  'history-taking': 'action-history-taking.jpg',
-  'physical-exam': 'action-physical-exam.jpg',
-  pocus: 'action-pocus.jpg',
-  'chest-xray': 'patient-going-xrayroom.png',
-  'blood-panel': 'action-blood-test.jpg',
-  oxygen: 'action-oxygen.jpg',
-  'needle-decompression': 'patient-taking-procedure.png',
-  'chest-tube': 'action-chest-tube.jpg',
+  'history-taking': 'action-images/action_history_taking.png',
+  'physical-exam': 'action-images/action_physical_exam.png',
+  monitoring: 'action-images/action_monitoring.png',
+  'blood-panel': 'action-images/action_blood_panel.png',
+  pocus: 'action-images/action_pocus.png',
+  'chest-xray': 'action-images/action_chest_xray.png',
+  oxygen: 'action-images/action_oxygen.png',
+  'needle-decompression': 'action-images/action_needle_decompression.png',
+  'chest-tube': 'action-images/action_chest_tube.png',
+  'iv-fluids': 'action-images/action_iv_fluids.png',
+  ecg: 'action-images/action_ecg.png',
+  'iv-access': 'action-images/action_iv_access.png',
+  troponin: 'action-images/action_troponin.png',
+  // No dedicated photo — clinically identical draw to troponin, reuses its overlay.
+  'd-dimer': 'action-images/action_troponin.png',
+  abg: 'action-images/action_abg.png',
+  'ct-chest': 'action-images/action_ct_chest.png',
+  'senior-consult': 'action-images/action_senior_consult.png',
+  // 'analgesia-iv' has no sourced photo yet — falls back to the current base patient image.
 }
+
+/**
+ * Persistent patient look after certain actions are performed (e.g. oxygen mask stays on),
+ * as opposed to VIDEO_OVERRIDE_BY_ACTION's 3s in-progress overlay. Only one photo can be shown
+ * at a time, so PERSISTENT_LOOK_PRIORITY (below) picks the most visually/clinically significant
+ * one when several qualifying actions have been performed.
+ */
+const AFTER_ACTION_IMAGE: Record<string, string> = {
+  'chest-tube': 'action-images/after_taking_chest_tube.png',
+  'needle-decompression': 'action-images/after_taking_needle_decompression.png',
+  oxygen: 'action-images/after_taking_oxygen.png',
+  'iv-fluids': 'action-images/after_taking_iv_fluids.png',
+  'iv-access': 'action-images/after_taking_iv_access.png',
+  monitoring: 'action-images/after_taking_monitoring.png',
+  abg: 'action-images/after_taking_abg.png',
+  'blood-panel': 'action-images/after_taking_blood_panel.png',
+  troponin: 'action-images/after_taking_blood_panel.png',
+  'd-dimer': 'action-images/after_taking_blood_panel.png',
+  ecg: 'action-images/after_taking_ecg.png',
+}
+
+/** Highest-significance first — determines which persistent look wins when several apply. */
+const PERSISTENT_LOOK_PRIORITY = [
+  'chest-tube',
+  'needle-decompression',
+  'oxygen',
+  'iv-fluids',
+  'iv-access',
+  'monitoring',
+  'abg',
+  'blood-panel',
+  'troponin',
+  'd-dimer',
+  'ecg',
+]
 
 function formatClock(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60)
@@ -42,11 +88,24 @@ function formatPenaltyTime(totalSeconds: number): string {
 export default function App() {
   const engine = useCaseEngine()
 
+  const [showLoading, setShowLoading] = useState(true)
+  const [loadingFadingOut, setLoadingFadingOut] = useState(false)
+
+  useEffect(() => {
+    const fadeTimer = window.setTimeout(() => setLoadingFadingOut(true), 2600)
+    const hideTimer = window.setTimeout(() => setShowLoading(false), 3000)
+    return () => {
+      window.clearTimeout(fadeTimer)
+      window.clearTimeout(hideTimer)
+    }
+  }, [])
+
   const [chatExpanded, setChatExpanded] = useState(false)
   const [message, setMessage] = useState('')
   const [monitorAttached, setMonitorAttached] = useState(false)
   const [activeOutcomeAction, setActiveOutcomeAction] = useState<string | null>(null)
   const [patientModalOpen, setPatientModalOpen] = useState(false)
+  const [vitalsModalOpen, setVitalsModalOpen] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
   const [isSoundOn, setIsSoundOn] = useState(true)
 
@@ -68,6 +127,11 @@ export default function App() {
     setMessage('')
   }
 
+  const handleMonitorChange = useCallback((attached: boolean) => {
+    setMonitorAttached(attached)
+    if (attached) setVitalsModalOpen(true)
+  }, [])
+
   const handlePerformAction = useCallback(
     (actionId: string) => {
       const overrideVideo = VIDEO_OVERRIDE_BY_ACTION[actionId]
@@ -83,6 +147,20 @@ export default function App() {
           window.setTimeout(() => setActiveOutcomeAction(actionId), 3000)
         } else {
           setActiveOutcomeAction(actionId)
+        }
+      } else if (actionId === 'history-taking') {
+        // Case file gives the learner the fuller history/chart right after they've asked for it.
+        if (hasOverride) {
+          window.setTimeout(() => setPatientModalOpen(true), 3000)
+        } else {
+          setPatientModalOpen(true)
+        }
+      } else if (actionId === 'monitoring') {
+        // Continuous Monitoring should land the learner straight on the bedside monitor view.
+        if (hasOverride) {
+          window.setTimeout(() => setVitalsModalOpen(true), 3000)
+        } else {
+          setVitalsModalOpen(true)
         }
       }
     },
@@ -100,15 +178,29 @@ export default function App() {
   const sys = Number(sysStr) || 120
 
   const isBad = vitals.hr >= 120 || vitals.hr < 50 || vitals.spo2 < 90 || vitals.rr >= 30 || vitals.rr < 10 || sys < 90 || sys >= 180
-  const isHappy = vitals.hr >= 60 && vitals.hr <= 100 && vitals.spo2 >= 95 && vitals.rr >= 12 && vitals.rr <= 20 && sys >= 90 && sys <= 130
+  // Arrival's own baseline vitals already sit inside these "happy" thresholds, so this is
+  // gated on having left Arrival — otherwise the happy photo would show before the learner
+  // has done anything, instead of the plain default (patient-without-monitor.png).
+  const isHappy =
+    engine.currentStateId !== 'arrival' &&
+    vitals.hr >= 60 && vitals.hr <= 100 && vitals.spo2 >= 95 && vitals.rr >= 12 && vitals.rr <= 20 && sys >= 90 && sys <= 130
 
-  let baseImage = 'patient-without-monitor.png'
-  if (isBad) {
-    baseImage = 'patient-bad.png'
+  const persistentLookActionId = PERSISTENT_LOOK_PRIORITY.find((id) =>
+    engine.performedActionIds.includes(id)
+  )
+  const persistentLookImage = persistentLookActionId ? AFTER_ACTION_IMAGE[persistentLookActionId] : null
+
+  let baseImage = 'action-images/patient-without-monitor.png'
+  if (engine.currentStateId === 'death') {
+    baseImage = 'action-images/dead.png'
+  } else if (isBad) {
+    baseImage = 'action-images/fail.png'
   } else if (isHappy) {
-    baseImage = 'patient-happy.png'
+    baseImage = 'action-images/patient-happy.png'
+  } else if (persistentLookImage) {
+    baseImage = persistentLookImage
   } else if (monitorAttached) {
-    baseImage = 'patient-with-monitor.png'
+    baseImage = 'action-images/patient-with-monitor.png'
   }
 
   const patientImage = patientOverrideImage || baseImage
@@ -127,10 +219,20 @@ export default function App() {
   try {
     return (
       <div className="h-screen w-screen overflow-hidden bg-surface p-5">
+        {showLoading && (
+          <div
+            className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-surface transition-opacity duration-400 ${
+              loadingFadingOut ? 'opacity-0' : 'opacity-100'
+            }`}
+          >
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+            <p className="text-[14px] font-medium text-gray-500">Loading case...</p>
+          </div>
+        )}
         <div className="grid h-full grid-cols-[300px_1fr_300px] gap-5">
           <LeftSidebar
             monitorAttached={monitorAttached}
-            onMonitorChange={setMonitorAttached}
+            onMonitorChange={handleMonitorChange}
             performed={engine.performedActionIds}
             availableActionIds={engine.availableActionIds}
             currentStateName={engine.currentStateName}
@@ -163,6 +265,8 @@ export default function App() {
             onHandOff={engine.handOff}
             caseEnded={engine.ended}
             scenario="pneumothorax"
+            vitalsModalOpen={vitalsModalOpen}
+            onVitalsModalOpenChange={setVitalsModalOpen}
           />
         </div>
         <OutcomeModal

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import {
   Clock,
   Undo2,
@@ -239,10 +239,21 @@ type RightSidebarProps = {
   onHandOff: () => void
   caseEnded: boolean
   scenario: ScenarioMode
+  vitalsModalOpen: boolean
+  onVitalsModalOpenChange: (open: boolean) => void
 }
 
-export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown, vitals, onHandOff, caseEnded, scenario }: RightSidebarProps) {
-  const [vitalsModalOpen, setVitalsModalOpen] = useState(false)
+export default function RightSidebar({
+  monitorAttached,
+  secondsLeft,
+  onTickDown,
+  vitals,
+  onHandOff,
+  caseEnded,
+  scenario,
+  vitalsModalOpen,
+  onVitalsModalOpenChange,
+}: RightSidebarProps) {
 
   const dynamicVitals = [
     {
@@ -350,7 +361,7 @@ export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown,
           <h2 className="text-[15px] font-semibold text-gray-800">Live Vitals</h2>
           <button
             type="button"
-            onClick={() => setVitalsModalOpen(true)}
+            onClick={() => onVitalsModalOpenChange(true)}
             className="rounded-full p-1 transition-colors hover:bg-gray-100"
           >
             <Info className="h-4 w-4 text-gray-400" />
@@ -384,7 +395,7 @@ export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown,
       {/* Vitals Detail Modal */}
       <VitalsDetailModal
         open={vitalsModalOpen}
-        onClose={() => setVitalsModalOpen(false)}
+        onClose={() => onVitalsModalOpenChange(false)}
         vitals={vitals}
         scenario={scenario}
       />
