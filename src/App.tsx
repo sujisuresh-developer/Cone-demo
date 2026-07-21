@@ -248,7 +248,7 @@ export default function App() {
             onSend={handleSend}
             performedActions={engine.performedActionIds}
             onViewOutcome={setActiveOutcomeAction}
-            onViewPatientDetails={() => setPatientModalOpen(true)}
+            _onViewPatientDetails={() => setPatientModalOpen(true)}
             onUseHint={handleUseHint}
             isMuted={isMuted}
             isSoundOn={isSoundOn}

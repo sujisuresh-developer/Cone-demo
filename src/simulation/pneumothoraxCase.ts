@@ -388,27 +388,25 @@ export const ACTIONS_BY_ID: Record<string, CaseAction> = Object.fromEntries(ACTI
 // of inaction, not a choice) use the same negative range.
 export const EDGES: CaseEdge[] = [
   // Arrival -> Assessment: 10 actions
-  { id: 'e-history', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'history-taking', score: 20, transitionNote: 'Focused history obtained — the best first step.' },
-  { id: 'e-physical-exam', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'physical-exam', score: 18, transitionNote: 'Exam reveals decreased breath sounds — strong early step.' },
-  { id: 'e-iv-access-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'iv-access', score: 15, transitionNote: 'Good preparatory step regardless of final diagnosis.' },
-  { id: 'e-monitoring-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'monitoring', score: 14, transitionNote: 'Continuous monitoring attached — good practice.' },
-  { id: 'e-senior-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'senior-consult', score: 12, transitionNote: 'Safe early escalation.' },
-  { id: 'e-oxygen-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'oxygen', score: 10, transitionNote: 'Reasonable early symptomatic support.' },
-  { id: 'e-ecg-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'ecg', score: 8, transitionNote: 'Reasonable differential-broadening test, not specific.' },
-  { id: 'e-troponin-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'troponin', score: 6, transitionNote: 'Low-yield ACS workup for this presentation.' },
-  { id: 'e-ddimer-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'd-dimer', score: 6, transitionNote: 'Low-yield PE workup for this presentation.' },
-  { id: 'e-blood-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'blood-panel', score: 5, transitionNote: 'Least specific, most delaying choice here.' },
+  { id: 'e-history', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'history-taking', score: 30, transitionNote: 'Focused history obtained — the best first step.' },
+  { id: 'e-physical-exam', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'physical-exam', score: 28, transitionNote: 'Exam reveals decreased breath sounds — strong early step.' },
+  { id: 'e-iv-access-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'iv-access', score: 25, transitionNote: 'Good preparatory step regardless of final diagnosis.' },
+  { id: 'e-monitoring-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'monitoring', score: 24, transitionNote: 'Continuous monitoring attached — good practice.' },
+  { id: 'e-senior-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'senior-consult', score: 20, transitionNote: 'Safe early escalation.' },
+  { id: 'e-oxygen-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'oxygen', score: 18, transitionNote: 'Reasonable early symptomatic support.' },
+  { id: 'e-ecg-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'ecg', score: 15, transitionNote: 'Reasonable differential-broadening test, not specific.' },
+  { id: 'e-troponin-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'troponin', score: 10, transitionNote: 'Low-yield ACS workup for this presentation.' },
+  { id: 'e-ddimer-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'd-dimer', score: 10, transitionNote: 'Low-yield PE workup for this presentation.' },
+  { id: 'e-blood-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'blood-panel', score: 8, transitionNote: 'Least specific, most delaying choice here.' },
 
   // Assessment -> Confirmed Pneumothorax: 4 actions
-  { id: 'e-pocus-1', source: 'assessment', target: 'confirmed-pneumo', trigger: 'action', actionId: 'pocus', score: 20, transitionNote: 'POCUS confirms absent lung sliding — the fast, correct route.' },
-  { id: 'e-cxr-1', source: 'assessment', target: 'confirmed-pneumo', trigger: 'action', actionId: 'chest-xray', score: 15, transitionNote: 'Alternate diagnostic route — slower than POCUS.' },
-  { id: 'e-ct-1', source: 'assessment', target: 'confirmed-pneumo', trigger: 'action', actionId: 'ct-chest', score: 10, transitionNote: 'Confirms the diagnosis, but far slower than needed first-line.' },
-  { id: 'e-senior-2', source: 'assessment', target: 'confirmed-pneumo', trigger: 'action', actionId: 'senior-consult', score: 12, transitionNote: 'Escalation helps push toward the correct imaging.' },
+  { id: 'e-pocus-1', source: 'assessment', target: 'confirmed-pneumo', trigger: 'action', actionId: 'pocus', score: 35, transitionNote: 'POCUS confirms absent lung sliding — the fast, correct route.' },
+  { id: 'e-cxr-1', source: 'assessment', target: 'confirmed-pneumo', trigger: 'action', actionId: 'chest-xray', score: 25, transitionNote: 'Alternate diagnostic route — slower than POCUS.' },
+  { id: 'e-ct-1', source: 'assessment', target: 'confirmed-pneumo', trigger: 'action', actionId: 'ct-chest', score: 18, transitionNote: 'Confirms the diagnosis, but far slower than needed first-line.' },
+  { id: 'e-senior-2', source: 'assessment', target: 'confirmed-pneumo', trigger: 'action', actionId: 'senior-consult', score: 20, transitionNote: 'Escalation helps push toward the correct imaging.' },
   // Assessment -> Respiratory Distress: 4 actions — genuinely wrong choices (negative), so no
   // detour-then-rescue combination can ever outscore the direct Assessment -> Confirmed
-  // Pneumothorax route above. (Resp Distress's own best rescue-then-continue value is high —
-  // 18 [pocus rescue] + 20 [needle decompression] = 38 — so anything less negative than -2 here
-  // would let this detour outscore the true golden path; -5/-8 leaves a comfortable margin.)
+  // Pneumothorax route above.
   {
     id: 'e-abg-1', source: 'assessment', target: 'resp-distress', trigger: 'action', actionId: 'abg', score: -5,
     transitionNote: 'Wastes critical time on a secondary read instead of confirming the diagnosis — the patient deteriorates while it is pending.',
@@ -437,10 +435,10 @@ export const EDGES: CaseEdge[] = [
   },
 
   // Respiratory Distress -> Confirmed Pneumothorax (rescue) or Shock (worse): 6 actions
-  { id: 'e-pocus-2', source: 'resp-distress', target: 'confirmed-pneumo', trigger: 'action', actionId: 'pocus', score: 18, transitionNote: 'Rescue route — fast imaging still recoverable at this stage.' },
-  { id: 'e-cxr-2', source: 'resp-distress', target: 'confirmed-pneumo', trigger: 'action', actionId: 'chest-xray', score: 15, transitionNote: 'Rescue route — imaging finally confirms the diagnosis.' },
-  { id: 'e-ct-2', source: 'resp-distress', target: 'confirmed-pneumo', trigger: 'action', actionId: 'ct-chest', score: 10, transitionNote: 'Slow rescue, but still gets there.' },
-  { id: 'e-senior-3', source: 'resp-distress', target: 'confirmed-pneumo', trigger: 'action', actionId: 'senior-consult', score: 12, transitionNote: 'Escalation rescue.' },
+  { id: 'e-pocus-2', source: 'resp-distress', target: 'confirmed-pneumo', trigger: 'action', actionId: 'pocus', score: 30, transitionNote: 'Rescue route — fast imaging still recoverable at this stage.' },
+  { id: 'e-cxr-2', source: 'resp-distress', target: 'confirmed-pneumo', trigger: 'action', actionId: 'chest-xray', score: 25, transitionNote: 'Rescue route — imaging finally confirms the diagnosis.' },
+  { id: 'e-ct-2', source: 'resp-distress', target: 'confirmed-pneumo', trigger: 'action', actionId: 'ct-chest', score: 18, transitionNote: 'Slow rescue, but still gets there.' },
+  { id: 'e-senior-3', source: 'resp-distress', target: 'confirmed-pneumo', trigger: 'action', actionId: 'senior-consult', score: 20, transitionNote: 'Escalation rescue.' },
   {
     id: 'e-blood-2', source: 'resp-distress', target: 'shock', trigger: 'action', actionId: 'blood-panel', score: -10,
     transitionNote: 'Wrong test again while the patient is actively deteriorating — progresses to shock.',
@@ -453,9 +451,9 @@ export const EDGES: CaseEdge[] = [
   },
 
   // Confirmed Pneumothorax -> Recovery / ICU / Tension: 4 actions
-  { id: 'e-needle-1', source: 'confirmed-pneumo', target: 'recovery', trigger: 'action', actionId: 'needle-decompression', score: 20, transitionNote: 'Timely decompression resolves the physiology — the golden-path route.' },
-  { id: 'e-tube-1', source: 'confirmed-pneumo', target: 'icu', trigger: 'action', actionId: 'chest-tube', score: 15, transitionNote: 'Definitive but slower alternate — stabilizes in ICU rather than immediate recovery.' },
-  { id: 'e-senior-4', source: 'confirmed-pneumo', target: 'icu', trigger: 'action', actionId: 'senior-consult', score: 10, transitionNote: 'Escalation leads to a safe but slower ICU admission.' },
+  { id: 'e-needle-1', source: 'confirmed-pneumo', target: 'recovery', trigger: 'action', actionId: 'needle-decompression', score: 35, transitionNote: 'Timely decompression resolves the physiology — the golden-path route.' },
+  { id: 'e-tube-1', source: 'confirmed-pneumo', target: 'icu', trigger: 'action', actionId: 'chest-tube', score: 25, transitionNote: 'Definitive but slower alternate — stabilizes in ICU rather than immediate recovery.' },
+  { id: 'e-senior-4', source: 'confirmed-pneumo', target: 'icu', trigger: 'action', actionId: 'senior-consult', score: 18, transitionNote: 'Escalation leads to a safe but slower ICU admission.' },
   {
     id: 'e-oxygen-2', source: 'confirmed-pneumo', target: 'tension-pneumo', trigger: 'action', actionId: 'oxygen', score: -10,
     transitionNote: 'Still not definitive — the pneumothorax itself progresses to tension physiology.',
@@ -469,8 +467,8 @@ export const EDGES: CaseEdge[] = [
   },
 
   // Shock -> Recovery (rescue) or Death (still wrong): 4 actions
-  { id: 'e-fluids-1', source: 'shock', target: 'recovery', trigger: 'action', actionId: 'iv-fluids', score: 15, transitionNote: 'Fluid resuscitation stabilizes blood pressure — recoverable.' },
-  { id: 'e-oxygen-3', source: 'shock', target: 'recovery', trigger: 'action', actionId: 'oxygen', score: 10, transitionNote: 'Supportive rescue.' },
+  { id: 'e-fluids-1', source: 'shock', target: 'recovery', trigger: 'action', actionId: 'iv-fluids', score: 25, transitionNote: 'Fluid resuscitation stabilizes blood pressure — recoverable.' },
+  { id: 'e-oxygen-3', source: 'shock', target: 'recovery', trigger: 'action', actionId: 'oxygen', score: 18, transitionNote: 'Supportive rescue.' },
   {
     id: 'e-analgesia-2', source: 'shock', target: 'death', trigger: 'action', actionId: 'analgesia-iv', score: -10,
     transitionNote: 'Wrong focus while the patient is crashing — fatal.',
@@ -489,8 +487,8 @@ export const EDGES: CaseEdge[] = [
   },
 
   // Tension Pneumothorax -> ICU: 2 actions
-  { id: 'e-needle-2', source: 'tension-pneumo', target: 'icu', trigger: 'action', actionId: 'needle-decompression', score: 18, transitionNote: 'Still very effective even at this later stage.' },
-  { id: 'e-tube-2', source: 'tension-pneumo', target: 'icu', trigger: 'action', actionId: 'chest-tube', score: 10, transitionNote: 'Definitive management after the tension has already progressed — a slower, lower-scored save.' },
+  { id: 'e-needle-2', source: 'tension-pneumo', target: 'icu', trigger: 'action', actionId: 'needle-decompression', score: 30, transitionNote: 'Still very effective even at this later stage.' },
+  { id: 'e-tube-2', source: 'tension-pneumo', target: 'icu', trigger: 'action', actionId: 'chest-tube', score: 18, transitionNote: 'Definitive management after the tension has already progressed — a slower, lower-scored save.' },
 ]
 
 export const CLINICAL_HINTS = [

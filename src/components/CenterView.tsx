@@ -16,7 +16,7 @@ type CenterViewProps = {
   onSend: () => void
   performedActions: string[]
   onViewOutcome: (actionId: string) => void
-  onViewPatientDetails: () => void
+  _onViewPatientDetails: () => void
   onUseHint: () => void
   isMuted: boolean
   isSoundOn: boolean
@@ -34,7 +34,7 @@ export default function CenterView({
   onSend,
   performedActions,
   onViewOutcome,
-  onViewPatientDetails,
+  _onViewPatientDetails,
   onUseHint,
   isMuted,
   isSoundOn,

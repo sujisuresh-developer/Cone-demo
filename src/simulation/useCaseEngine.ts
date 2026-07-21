@@ -80,7 +80,7 @@ function computeResult(events: EngineEvent[], finalStateId: StateId, hintsUsed: 
   // Status reflects outcome quality, not a specific diagnostic checkpoint — some good-outcome
   // routes (e.g. Oxygen straight from Respiratory Distress or Shock) never pass through
   // Confirmed Pneumothorax at all, but still saved the patient and shouldn't read as "Failed".
-  const allBestChoices = events.length > 0 && events.every((e) => e.score >= 20)
+  const allBestChoices = events.length > 0 && events.every((e) => e.score >= 30)
   let caseStatus: CaseStatus = 'failed'
   if (reachedGoodOutcome) {
     caseStatus = allBestChoices ? 'success' : 'partial'
