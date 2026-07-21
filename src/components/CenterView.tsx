@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
-import { ClipboardList, FileText } from 'lucide-react'
+import { NotebookPen, FileText } from 'lucide-react'
 import ChatPanel, { AudioControls, type ChatMessage } from './ChatPanel'
 import ReportsModal from './ReportsModal'
-import PatientMedia from './PatientMedia'
+import NotepadModal from './NotepadModal'
+import PatientMedia, { VIDEO_EXTENSIONS } from './PatientMedia'
+
+
 
 type CenterViewProps = {
   chatExpanded: boolean
@@ -40,6 +43,7 @@ export default function CenterView({
   patientImage,
 }: CenterViewProps) {
   const [reportsOpen, setReportsOpen] = useState(false)
+  const [notepadOpen, setNotepadOpen] = useState(false)
   const [currentImg, setCurrentImg] = useState(patientImage)
   const [prevImg, setPrevImg] = useState<string | null>(null)
 
@@ -63,7 +67,14 @@ export default function CenterView({
   return (
     <main className="card-shadow relative flex h-full flex-col overflow-hidden rounded-3xl">
       <div className="absolute inset-0 bg-gray-900">
-        {prevImg && (
+        {VIDEO_EXTENSIONS.test(currentImg) && (
+          <PatientMedia
+            src="action-images/patient-without-monitor.png"
+            alt="Patient"
+            className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
+          />
+        )}
+        {prevImg && !VIDEO_EXTENSIONS.test(currentImg) && (
           <PatientMedia
             src={prevImg}
             alt="Patient"
@@ -74,7 +85,7 @@ export default function CenterView({
           key={currentImg}
           src={currentImg}
           alt="Patient in hospital room"
-          className={`absolute inset-0 h-full w-full object-cover object-top animate-fade-in transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
+          className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
         />
         <div
           className={`absolute inset-0 transition-all duration-500 ease-in-out ${chatExpanded ? 'bg-white/30' : 'bg-black/5'
@@ -128,14 +139,14 @@ export default function CenterView({
       {/* Floating buttons in corners */}
       <button
         type="button"
-        onClick={onViewPatientDetails}
+        onClick={() => setNotepadOpen(true)}
         className="absolute bottom-6 left-6 z-20 flex flex-col items-center gap-1.5 group animate-fade-in"
       >
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white card-shadow transition-all duration-300 hover:scale-105 hover:bg-gray-50">
-          <ClipboardList className="h-5 w-5 text-gray-600" strokeWidth={1.5} />
+          <NotebookPen className="h-5 w-5 text-gray-600" strokeWidth={1.5} />
         </div>
         <span className="text-[11px] font-semibold text-gray-700 bg-white/80 px-2 py-0.5 rounded-full card-shadow backdrop-blur-[2px] transition-all group-hover:bg-white">
-          Case file
+          Notepad
         </span>
       </button>
 
@@ -151,6 +162,10 @@ export default function CenterView({
           Reports
         </span>
       </button>
+      <NotepadModal
+        open={notepadOpen}
+        onClose={() => setNotepadOpen(false)}
+      />
       <ReportsModal
         open={reportsOpen}
         onClose={() => setReportsOpen(false)}

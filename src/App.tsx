@@ -16,14 +16,13 @@ export type { Vitals }
 
 /** Full-screen overlay shown for 3s while an action is "in progress", keyed by action id. */
 const VIDEO_OVERRIDE_BY_ACTION: Record<string, string> = {
-  'history-taking': 'action-images/action_history_taking.png',
   'physical-exam': 'action-images/action_physical_exam.png',
   monitoring: 'action-images/action_monitoring.png',
   'blood-panel': 'action-images/action_blood_panel.png',
-  pocus: 'action-images/action_pocus.png',
+  pocus: 'correct_videos/ultra_sound.mp4',//added that ultra sound video
   'chest-xray': 'action-images/action_chest_xray.png',
   oxygen: 'action-images/action_oxygen.png',
-  'needle-decompression': 'action-images/action_needle_decompression.png',
+  'needle-decompression': 'correct_videos/needle_decompression.mp4',//added that needle decompression video
   'chest-tube': 'action-images/action_chest_tube.png',
   'iv-fluids': 'action-images/action_iv_fluids.png',
   ecg: 'action-images/action_ecg.png',
@@ -112,7 +111,7 @@ export default function App() {
   const [patientOverrideImage, setPatientOverrideImage] = useState<string | null>(null)
   const overrideTimerRef = useRef<number | null>(null)
 
-  const triggerImageOverride = useCallback((img: string, duration = 3000) => {
+  const triggerImageOverride = useCallback((img: string, duration = 6000) => {
     setPatientOverrideImage(img)
     if (overrideTimerRef.current) window.clearTimeout(overrideTimerRef.current)
     overrideTimerRef.current = window.setTimeout(() => {
@@ -134,37 +133,37 @@ export default function App() {
 
   const handlePerformAction = useCallback(
     (actionId: string) => {
+      if (patientOverrideImage !== null) return // Ignore clicks while video is playing
+
       const overrideVideo = VIDEO_OVERRIDE_BY_ACTION[actionId]
       const hasOverride = !!overrideVideo
-      if (overrideVideo) {
-        triggerImageOverride(overrideVideo)
-      }
 
-      engine.performAction(actionId)
+      if (hasOverride) {
+        triggerImageOverride(overrideVideo, 6000)
+        window.setTimeout(() => {
+          engine.performAction(actionId)
 
-      if (OUTCOME_ACTION_IDS.has(actionId)) {
-        if (hasOverride) {
-          window.setTimeout(() => setActiveOutcomeAction(actionId), 3000)
-        } else {
+          if (OUTCOME_ACTION_IDS.has(actionId)) {
+            setActiveOutcomeAction(actionId)
+          } else if (actionId === 'history-taking') {
+            setPatientModalOpen(true)
+          } else if (actionId === 'monitoring') {
+            setVitalsModalOpen(true)
+          }
+        }, 6000)
+      } else {
+        engine.performAction(actionId)
+
+        if (OUTCOME_ACTION_IDS.has(actionId)) {
           setActiveOutcomeAction(actionId)
-        }
-      } else if (actionId === 'history-taking') {
-        // Case file gives the learner the fuller history/chart right after they've asked for it.
-        if (hasOverride) {
-          window.setTimeout(() => setPatientModalOpen(true), 3000)
-        } else {
+        } else if (actionId === 'history-taking') {
           setPatientModalOpen(true)
-        }
-      } else if (actionId === 'monitoring') {
-        // Continuous Monitoring should land the learner straight on the bedside monitor view.
-        if (hasOverride) {
-          window.setTimeout(() => setVitalsModalOpen(true), 3000)
-        } else {
+        } else if (actionId === 'monitoring') {
           setVitalsModalOpen(true)
         }
       }
     },
-    [engine, triggerImageOverride]
+    [engine, patientOverrideImage, triggerImageOverride]
   )
 
   const handleUseHint = useCallback(() => {

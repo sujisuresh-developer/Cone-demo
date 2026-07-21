@@ -1,27 +1,43 @@
-const VIDEO_EXTENSIONS = /\.(mp4|webm|mov)$/i
+import { useState, useRef, useEffect } from 'react'
+
+export const VIDEO_EXTENSIONS = /\.(mp4|webm|mov)$/i
 
 type Props = {
-  /** Path under /public, without the leading slash — e.g. "xrayroom-entry.mp4" or "patient-happy.png". */
+  /** Path under /public, without the leading slash — e.g. "correct_videos/history_taking.mp4" or "patient-happy.png". */
   src: string
   alt: string
   className?: string
 }
 
 /**
- * Some patient snapshot assets may be short clips rather than stills. A plain <img> silently
- * fails to decode video (no error, just nothing rendered) — this picks the right element
- * based on the file extension so either kind works.
+ * Renders image or video with smooth fade transitions once video frames are ready to play.
  */
 export default function PatientMedia({ src, alt, className }: Props) {
-  if (VIDEO_EXTENSIONS.test(src)) {
+  const isVideo = VIDEO_EXTENSIONS.test(src)
+  const [isReady, setIsReady] = useState(false)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  useEffect(() => {
+    setIsReady(false)
+  }, [src])
+
+  if (isVideo) {
+    const videoClass = `${className ? className + ' ' : ''}${
+      isReady ? 'video-fade opacity-100' : 'opacity-0'
+    } transition-opacity duration-300`
+
     return (
       <video
+        ref={videoRef}
         src={`/${src}`}
-        className={className}
+        className={videoClass}
         autoPlay
         muted
         loop
         playsInline
+        onLoadedData={() => setIsReady(true)}
+        onCanPlay={() => setIsReady(true)}
+        onPlaying={() => setIsReady(true)}
       />
     )
   }

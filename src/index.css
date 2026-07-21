@@ -793,3 +793,32 @@ body {
   to   { opacity: 1; transform: translateX(0); }
 }
 
+
+/* Video fade/blink effect */
+.video-fade {
+  animation: fadeInOut 5s ease-in-out forwards;
+}
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: scale(1.03);
+  }
+  30% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+  70% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: scale(1.03);
+  }
+}
+
+

@@ -1,7 +1,8 @@
 import { Info, Search, Bed, Radio, Clock } from 'lucide-react'
 import { useState } from 'react'
 import { ACTIONS, PATIENT } from '../simulation/pneumothoraxCase'
-import PatientMedia from './PatientMedia'
+import PatientMedia, { VIDEO_EXTENSIONS } from './PatientMedia'
+
 
 /** Diagnostics actions that open a rich result panel (OutcomeModal) instead of just logging "Done". */
 export const OUTCOME_ACTION_IDS = new Set(['pocus', 'chest-xray', 'blood-panel', 'troponin'])
@@ -77,11 +78,20 @@ export default function LeftSidebar({
         </div>
 
         <div className="relative overflow-hidden rounded-2xl bg-gray-900">
+          {VIDEO_EXTENSIONS.test(patientImage) && (
+            <PatientMedia
+              src="action-images/patient-without-monitor.png"
+              alt={PATIENT.name}
+              className="h-[170px] w-full object-cover object-top"
+            />
+          )}
           <PatientMedia
             key={patientImage}
             src={patientImage}
             alt={PATIENT.name}
-            className="h-[170px] w-full object-cover object-top animate-fade-in"
+            className={`${
+              VIDEO_EXTENSIONS.test(patientImage) ? 'absolute inset-0' : ''
+            } h-[170px] w-full object-cover object-top`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
           <div className="absolute right-0 bottom-0 left-0 p-3.5">
