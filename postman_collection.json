@@ -1,0 +1,675 @@
+{
+  "info": {
+    "_postman_id": "cone-ui-api-collection-v1",
+    "name": "Cone UI - API Documentation v1",
+    "description": "Complete API documentation for the Cone UI project. Covers authentication, profile, dashboard, cases, simulation, MCQ, and WebSocket endpoints.\n\n## Base URL\n`{{BASE_URL}}` = `http://localhost:3000`\n\n## Authentication\nAll protected routes require:\n```\nAuthorization: Bearer {{ACCESS_TOKEN}}\n```\n\n## Standard Response Format\n```json\n{\n  \"isSuccess\": true,\n  \"message\": \"Value fetched successfully\",\n  \"toastMessage\": \"Data fetched successfully\",\n  \"data\": []\n}\n```\n\n## Standard POST Search Body\n```json\n{\n  \"search\": { \"term\": \"\" },\n  \"pagination\": { \"page\": 1, \"limit\": 10 },\n  \"sort\": { \"isAlphabetic\": true }\n}\n```",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL for the API server"
+    },
+    {
+      "key": "ACCESS_TOKEN",
+      "value": "",
+      "type": "string",
+      "description": "JWT Access Token — auto-set on login/verifyOTP"
+    },
+    {
+      "key": "REFRESH_TOKEN",
+      "value": "",
+      "type": "string",
+      "description": "JWT Refresh Token — auto-set on login/verifyOTP"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "Endpoints related to user authentication — login, signup, and OTP verification.",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.isSuccess && res.data) {",
+                  "  pm.collectionVariables.set('ACCESS_TOKEN', res.data.accessToken);",
+                  "  pm.collectionVariables.set('REFRESH_TOKEN', res.data.refreshToken);",
+                  "  console.log('✅ Tokens saved to collection variables');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Authenticates the user with email and password. Returns access token, refresh token, and expiry timestamp.\n\n### Request Body\n| Field    | Type   | Required | Description          |\n|----------|--------|----------|----------------------|\n| email    | string | ✅       | User's email address |\n| password | string | ✅       | User's password      |"
+          },
+          "response": [
+            {
+              "name": "200 - Login Successful",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password@123\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/login",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "login"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"Login successful\",\n  \"toastMessage\": \"Welcome back!\",\n  \"data\": {\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3JfMTIzIiwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwiaWF0IjoxNjkwMDAwMDAwLCJleHAiOjE2OTAwMzYwMDB9.EXAMPLE_SIGNATURE\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3JfMTIzIiwiaWF0IjoxNjkwMDAwMDAwLCJleHAiOjE2OTAyNTkyMDB9.REFRESH_SIGNATURE\",\n    \"expiryAt\": \"2026-07-04T10:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "401 - Invalid Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"wrong@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/login",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "login"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": false,\n  \"message\": \"Invalid credentials\",\n  \"toastMessage\": \"Email or password is incorrect\",\n  \"data\": null\n}"
+            },
+            {
+              "name": "422 - Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"123\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/login",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "login"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": false,\n  \"message\": \"Validation failed\",\n  \"toastMessage\": \"Please enter a valid email and password\",\n  \"data\": {\n    \"errors\": [\n      { \"field\": \"email\", \"message\": \"Must be a valid email address\" },\n      { \"field\": \"password\", \"message\": \"Password must be at least 8 characters\" }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/signup",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "signup"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Registers a new user. On success, sends an OTP to the registered email for verification.\n\n### Request Body\n| Field    | Type   | Required | Description                    |\n|----------|--------|----------|--------------------------------|\n| email    | string | ✅       | New user's email address       |\n| password | string | ✅       | Min 8 chars, must be strong    |"
+          },
+          "response": [
+            {
+              "name": "201 - Signup Successful (OTP Sent)",
+              "status": "Created",
+              "code": 201,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password@123\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/signup",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "signup"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"OTP sent to your email\",\n  \"toastMessage\": \"Please check your inbox for the OTP\",\n  \"data\": {\n    \"otpSent\": true,\n    \"email\": \"newuser@example.com\",\n    \"otpExpiresAt\": \"2026-07-03T10:31:15.000Z\"\n  }\n}"
+            },
+            {
+              "name": "409 - Email Already Exists",
+              "status": "Conflict",
+              "code": 409,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"existing@example.com\",\n  \"password\": \"Password@123\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/signup",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "signup"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": false,\n  \"message\": \"Email already registered\",\n  \"toastMessage\": \"An account with this email already exists\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.isSuccess && res.data) {",
+                  "  pm.collectionVariables.set('ACCESS_TOKEN', res.data.accessToken);",
+                  "  pm.collectionVariables.set('REFRESH_TOKEN', res.data.refreshToken);",
+                  "  console.log('✅ Tokens saved after OTP verification');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/verifyOTP",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "verifyOTP"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"otp\": \"123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Verifies the OTP sent during signup. Returns access token, refresh token, and expiry on success.\n\n### Request Body\n| Field | Type   | Required | Description              |\n|-------|--------|----------|--------------------------|\n| email | string | ✅       | Email used during signup |\n| otp   | string | ✅       | 6-digit OTP from email   |"
+          },
+          "response": [
+            {
+              "name": "200 - OTP Verified",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/verifyOTP",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "verifyOTP"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"OTP verified successfully\",\n  \"toastMessage\": \"Account verified! Welcome aboard.\",\n  \"data\": {\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3JfMTIzIiwiZW1haWwiOiJuZXd1c2VyQGV4YW1wbGUuY29tIiwiaWF0IjoxNjkwMDAwMDAwLCJleHAiOjE2OTAwMzYwMDB9.EXAMPLE_ACCESS\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3JfMTIzIiwiaWF0IjoxNjkwMDAwMDAwLCJleHAiOjE2OTAyNTkyMDB9.EXAMPLE_REFRESH\",\n    \"expiryAt\": \"2026-07-04T10:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 - Invalid or Expired OTP",
+              "status": "Bad Request",
+              "code": 400,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"otp\": \"000000\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/verifyOTP",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "verifyOTP"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": false,\n  \"message\": \"Invalid or expired OTP\",\n  \"toastMessage\": \"OTP has expired. Please request a new one.\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "👤 User",
+      "description": "Endpoints for user profile management.",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}", "type": "text", "description": "JWT Access Token" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/getprofile",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "getprofile"]
+            },
+            "description": "Retrieves the authenticated user's profile. Requires a valid Bearer token.\n\n### Headers\n| Header        | Value                   | Required |\n|---------------|-------------------------|----------|\n| Authorization | Bearer {{ACCESS_TOKEN}} | ✅       |"
+          },
+          "response": [
+            {
+              "name": "200 - Profile Fetched",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/getprofile",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "getprofile"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"Profile fetched successfully\",\n  \"toastMessage\": \"Profile loaded\",\n  \"data\": {\n    \"userId\": \"usr_123\",\n    \"email\": \"user@example.com\",\n    \"fullName\": \"John Doe\",\n    \"role\": \"student\",\n    \"avatar\": \"https://cdn.example.com/avatars/usr_123.jpg\",\n    \"institution\": \"Example Medical College\",\n    \"createdAt\": \"2026-01-01T00:00:00.000Z\",\n    \"lastLogin\": \"2026-07-03T10:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "401 - Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/getprofile",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "getprofile"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": false,\n  \"message\": \"Unauthorized access\",\n  \"toastMessage\": \"Please login to continue\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard",
+      "description": "Dashboard data with search, sort, and pagination support.",
+      "item": [
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/dashboard",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "dashboard"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"search\": {\n    \"term\": \"\"\n  },\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10\n  },\n  \"sort\": {\n    \"isAlphabetic\": true\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Retrieves dashboard data including stats, recent activity, and widgets. Supports search, sort, and pagination.\n\n### Request Body\n| Field             | Type    | Required | Description                     |\n|-------------------|---------|----------|---------------------------------|\n| search.term       | string  | ❌       | Search keyword                  |\n| pagination.page   | number  | ❌       | Current page (default: 1)       |\n| pagination.limit  | number  | ❌       | Items per page (default: 10)    |\n| sort.isAlphabetic | boolean | ❌       | Sort alphabetically if true     |"
+          },
+          "response": [
+            {
+              "name": "200 - Dashboard Data Fetched",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"search\": { \"term\": \"\" },\n  \"pagination\": { \"page\": 1, \"limit\": 10 },\n  \"sort\": { \"isAlphabetic\": true }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/dashboard",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "dashboard"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"Dashboard data fetched successfully\",\n  \"toastMessage\": \"Dashboard loaded\",\n  \"data\": {\n    \"stats\": {\n      \"totalCases\": 42,\n      \"completedCases\": 28,\n      \"inProgressCases\": 10,\n      \"pendingCases\": 4,\n      \"averageScore\": 87.5\n    },\n    \"recentActivity\": [\n      {\n        \"activityId\": \"act_001\",\n        \"caseId\": \"case_456\",\n        \"caseName\": \"Acute Chest Pain Simulation\",\n        \"action\": \"completed\",\n        \"score\": 92,\n        \"timestamp\": \"2026-07-02T14:30:00.000Z\"\n      },\n      {\n        \"activityId\": \"act_002\",\n        \"caseId\": \"case_789\",\n        \"caseName\": \"Pediatric Fever Assessment\",\n        \"action\": \"started\",\n        \"score\": null,\n        \"timestamp\": \"2026-07-03T09:15:00.000Z\"\n      }\n    ],\n    \"pagination\": {\n      \"currentPage\": 1,\n      \"totalPages\": 5,\n      \"totalItems\": 42,\n      \"limit\": 10\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🗂️ Cases",
+      "description": "Endpoints for managing and starting simulation cases.",
+      "item": [
+        {
+          "name": "Get Cases",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/getcases",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "getcases"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"search\": {\n    \"term\": \"chest pain\"\n  },\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10\n  },\n  \"sort\": {\n    \"isAlphabetic\": true\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Retrieves a paginated list of available simulation cases. Supports keyword search, alphabetical sort, and pagination.\n\n### Request Body\n| Field             | Type    | Required | Description                   |\n|-------------------|---------|----------|-------------------------------|\n| search.term       | string  | ❌       | Search keyword for case names |\n| pagination.page   | number  | ❌       | Page number (default: 1)      |\n| pagination.limit  | number  | ❌       | Items per page (default: 10)  |\n| sort.isAlphabetic | boolean | ❌       | Sort alphabetically           |"
+          },
+          "response": [
+            {
+              "name": "200 - Cases Fetched",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"search\": { \"term\": \"chest pain\" },\n  \"pagination\": { \"page\": 1, \"limit\": 10 },\n  \"sort\": { \"isAlphabetic\": true }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/getcases",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "getcases"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"Cases fetched successfully\",\n  \"toastMessage\": \"Cases loaded\",\n  \"data\": {\n    \"cases\": [\n      {\n        \"caseId\": \"case_001\",\n        \"title\": \"Acute Chest Pain Simulation\",\n        \"description\": \"Patient presents with sudden onset chest pain radiating to the left arm.\",\n        \"difficulty\": \"intermediate\",\n        \"category\": \"cardiology\",\n        \"estimatedDurationMins\": 30,\n        \"status\": \"available\",\n        \"thumbnail\": \"https://cdn.example.com/cases/chest_pain.jpg\",\n        \"createdAt\": \"2026-01-15T00:00:00.000Z\"\n      },\n      {\n        \"caseId\": \"case_002\",\n        \"title\": \"Pediatric Fever Assessment\",\n        \"description\": \"5-year-old child with high-grade fever and associated symptoms.\",\n        \"difficulty\": \"beginner\",\n        \"category\": \"pediatrics\",\n        \"estimatedDurationMins\": 20,\n        \"status\": \"available\",\n        \"thumbnail\": \"https://cdn.example.com/cases/pediatric_fever.jpg\",\n        \"createdAt\": \"2026-02-10T00:00:00.000Z\"\n      }\n    ],\n    \"pagination\": {\n      \"currentPage\": 1,\n      \"totalPages\": 4,\n      \"totalItems\": 38,\n      \"limit\": 10\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Start Case",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/startcase/:caseId",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "startcase", ":caseId"],
+              "variable": [
+                {
+                  "key": "caseId",
+                  "value": "case_001",
+                  "description": "Unique ID of the case to start"
+                }
+              ]
+            },
+            "description": "Starts a simulation session for the given `caseId`. Returns session info and initial vitals.\n\n### Path Parameters\n| Parameter | Type   | Required | Description           |\n|-----------|--------|----------|-----------------------|\n| caseId    | string | ✅       | Unique case ID        |\n\n### Headers\n| Header        | Value                   | Required |\n|---------------|-------------------------|----------|\n| Authorization | Bearer {{ACCESS_TOKEN}} | ✅       |"
+          },
+          "response": [
+            {
+              "name": "200 - Simulation Started",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/startcase/case_001",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "startcase", "case_001"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"Case simulation started\",\n  \"toastMessage\": \"Simulation has begun. Good luck!\",\n  \"data\": {\n    \"sessionId\": \"sess_abc123\",\n    \"caseId\": \"case_001\",\n    \"caseName\": \"Acute Chest Pain Simulation\",\n    \"startedAt\": \"2026-07-03T10:16:15.000Z\",\n    \"status\": \"in_progress\",\n    \"initialVitals\": {\n      \"heartRate\": 95,\n      \"bloodPressure\": { \"systolic\": 140, \"diastolic\": 90 },\n      \"oxygenSaturation\": 94,\n      \"temperature\": 37.2,\n      \"respiratoryRate\": 20\n    },\n    \"nextActionOptions\": [\n      { \"actionId\": \"act_take_history\", \"label\": \"Take Patient History\" },\n      { \"actionId\": \"act_physical_exam\", \"label\": \"Perform Physical Examination\" },\n      { \"actionId\": \"act_order_ecg\", \"label\": \"Order ECG\" }\n    ]\n  }\n}"
+            },
+            {
+              "name": "404 - Case Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/startcase/case_999",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "startcase", "case_999"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": false,\n  \"message\": \"Case not found\",\n  \"toastMessage\": \"The requested case does not exist\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🎮 Simulation",
+      "description": "Perform actions within an active simulation session.",
+      "item": [
+        {
+          "name": "Perform Action",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/action/:actionId",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "action", ":actionId"],
+              "variable": [
+                {
+                  "key": "actionId",
+                  "value": "act_order_ecg",
+                  "description": "The action to perform in the simulation"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"sess_abc123\",\n  \"caseId\": \"case_001\",\n  \"metadata\": {\n    \"selectedOption\": \"12-lead ECG\",\n    \"notes\": \"Patient complaining of left arm radiation\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Performs a simulation action (`actionId`) in an active session. Returns feedback, updated vitals, and next available actions.\n\n### Path Parameters\n| Parameter | Type   | Required | Description                        |\n|-----------|--------|----------|---------------------------------|\n| actionId  | string | ✅       | Unique action ID to perform     |\n\n### Request Body\n| Field            | Type   | Required | Description                      |\n|------------------|--------|----------|----------------------------------|\n| sessionId        | string | ✅       | Active simulation session ID     |\n| caseId           | string | ✅       | Case ID for the session          |\n| metadata         | object | ❌       | Extra context/options for action |"
+          },
+          "response": [
+            {
+              "name": "200 - Action Performed",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"sess_abc123\",\n  \"caseId\": \"case_001\",\n  \"metadata\": { \"selectedOption\": \"12-lead ECG\" }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/action/act_order_ecg",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "action", "act_order_ecg"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"Action performed successfully\",\n  \"toastMessage\": \"ECG ordered\",\n  \"data\": {\n    \"actionResult\": {\n      \"actionId\": \"act_order_ecg\",\n      \"feedback\": \"ECG shows ST elevation in leads II, III, and aVF — indicative of inferior STEMI.\",\n      \"isCorrect\": true,\n      \"scoreGained\": 15,\n      \"totalScoreSoFar\": 45\n    },\n    \"updatedVitals\": {\n      \"heartRate\": 110,\n      \"bloodPressure\": { \"systolic\": 88, \"diastolic\": 55 },\n      \"oxygenSaturation\": 91,\n      \"temperature\": 37.5,\n      \"respiratoryRate\": 24\n    },\n    \"nextActionOptions\": [\n      { \"actionId\": \"act_administer_aspirin\", \"label\": \"Administer Aspirin 300mg\" },\n      { \"actionId\": \"act_call_cath_lab\", \"label\": \"Activate Cath Lab\" },\n      { \"actionId\": \"act_give_morphine\", \"label\": \"Give Morphine for Pain\" }\n    ],\n    \"isSimulationComplete\": false\n  }\n}"
+            },
+            {
+              "name": "200 - Simulation Complete",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"sess_abc123\",\n  \"caseId\": \"case_001\",\n  \"metadata\": { \"selectedOption\": \"Discharge patient\" }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/action/act_final_discharge",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "action", "act_final_discharge"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"Simulation completed\",\n  \"toastMessage\": \"Well done! Your simulation is complete.\",\n  \"data\": {\n    \"actionResult\": {\n      \"actionId\": \"act_final_discharge\",\n      \"feedback\": \"Correct — patient stabilised and safely discharged.\",\n      \"isCorrect\": true,\n      \"scoreGained\": 20,\n      \"totalScoreSoFar\": 85\n    },\n    \"updatedVitals\": {\n      \"heartRate\": 72,\n      \"bloodPressure\": { \"systolic\": 120, \"diastolic\": 78 },\n      \"oxygenSaturation\": 98,\n      \"temperature\": 36.8,\n      \"respiratoryRate\": 16\n    },\n    \"nextActionOptions\": [],\n    \"isSimulationComplete\": true,\n    \"finalResult\": {\n      \"finalScore\": 85,\n      \"grade\": \"A\",\n      \"timeTaken\": \"28 mins\",\n      \"feedback\": \"Excellent management. Rapid ECG ordering and cath lab activation saved the patient.\"\n    }\n  }\n}"
+            },
+            {
+              "name": "400 - Invalid Action",
+              "status": "Bad Request",
+              "code": 400,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"sess_abc123\",\n  \"caseId\": \"case_001\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/action/act_invalid",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "action", "act_invalid"]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": false,\n  \"message\": \"Invalid or unavailable action\",\n  \"toastMessage\": \"This action cannot be performed at this stage\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📝 MCQ",
+      "description": "Retrieve multiple choice questions for training modules or simulations.",
+      "item": [
+        {
+          "name": "Get MCQ Questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/getMCQ?caseId=case_001",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "getMCQ"],
+              "query": [
+                { "key": "caseId", "value": "case_001", "description": "Filter MCQs by case ID" },
+                { "key": "category", "value": "cardiology", "description": "Filter by medical category", "disabled": true },
+                { "key": "difficulty", "value": "intermediate", "description": "beginner | intermediate | advanced", "disabled": true }
+              ]
+            },
+            "description": "Returns MCQ questions, optionally filtered by `caseId`, `category`, or `difficulty`.\n\n### Query Parameters\n| Param      | Type   | Required | Description                         |\n|------------|--------|----------|-------------------------------------|\n| caseId     | string | ❌       | Filter by case                      |\n| category   | string | ❌       | e.g. cardiology, pediatrics         |\n| difficulty | string | ❌       | beginner \\| intermediate \\| advanced |"
+          },
+          "response": [
+            {
+              "name": "200 - MCQ Questions Fetched",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/getMCQ?caseId=case_001",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "getMCQ"],
+                  "query": [{ "key": "caseId", "value": "case_001" }]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"isSuccess\": true,\n  \"message\": \"MCQ questions fetched successfully\",\n  \"toastMessage\": \"Questions loaded\",\n  \"data\": [\n    {\n      \"questionId\": \"q_001\",\n      \"question\": \"What is the most appropriate immediate management for a patient presenting with STEMI?\",\n      \"options\": [\n        \"A. Primary PCI within 90 minutes\",\n        \"B. Thrombolysis with Alteplase\",\n        \"C. IV Heparin only\",\n        \"D. Watchful waiting\"\n      ],\n      \"correctAnswer\": \"A\",\n      \"explanation\": \"Primary PCI is the gold standard for STEMI when performed within 90 minutes of first medical contact.\",\n      \"category\": \"cardiology\",\n      \"difficulty\": \"intermediate\",\n      \"caseId\": \"case_001\"\n    },\n    {\n      \"questionId\": \"q_002\",\n      \"question\": \"Which ECG finding is most diagnostic of inferior STEMI?\",\n      \"options\": [\n        \"A. ST elevation in V1-V4\",\n        \"B. ST elevation in leads II, III, and aVF\",\n        \"C. ST depression in I and aVL\",\n        \"D. T-wave inversion in V5-V6\"\n      ],\n      \"correctAnswer\": \"B\",\n      \"explanation\": \"ST elevation in the inferior leads (II, III, aVF) indicates inferior STEMI, typically due to RCA occlusion.\",\n      \"category\": \"cardiology\",\n      \"difficulty\": \"intermediate\",\n      \"caseId\": \"case_001\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔌 WebSocket",
+      "description": "Real-time vital signs streaming over WebSocket during a simulation session.",
+      "item": [
+        {
+          "name": "Vital Signs Stream (WebSocket)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Upgrade", "value": "websocket", "type": "text" },
+              { "key": "Connection", "value": "Upgrade", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/vitalsigns?sessionId=sess_abc123&token={{ACCESS_TOKEN}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "vitalsigns"],
+              "query": [
+                { "key": "sessionId", "value": "sess_abc123", "description": "Active simulation session ID" },
+                { "key": "token", "value": "{{ACCESS_TOKEN}}", "description": "JWT Access Token for WS handshake auth" }
+              ]
+            },
+            "description": "## WebSocket — Real-Time Vital Signs\n\n**Protocol**: `ws://` or `wss://`\n**WebSocket URL**: `ws://localhost:3000/api/v1/vitalsigns?sessionId=sess_abc123&token=<ACCESS_TOKEN>`\n\n> ⚠️ **Note**: To test this in Postman, go to **File > New > WebSocket Request** and use the WS URL above.\n\n---\n\n### Connection Query Parameters\n| Parameter | Type   | Required | Description                         |\n|-----------|--------|----------|-------------------------------------|\n| sessionId | string | ✅       | Active simulation session ID        |\n| token     | string | ✅       | JWT Access Token for authentication |\n\n---\n\n### Message Types\n\n#### ➡️ Client → Server: Subscribe\n```json\n{\n  \"type\": \"subscribe\",\n  \"sessionId\": \"sess_abc123\"\n}\n```\n\n#### ⬅️ Server → Client: Vitals Update (every ~2 seconds)\n```json\n{\n  \"type\": \"vitals_update\",\n  \"sessionId\": \"sess_abc123\",\n  \"timestamp\": \"2026-07-03T10:16:15.000Z\",\n  \"data\": {\n    \"heartRate\": 102,\n    \"bloodPressure\": { \"systolic\": 88, \"diastolic\": 55 },\n    \"oxygenSaturation\": 90,\n    \"temperature\": 37.8,\n    \"respiratoryRate\": 26,\n    \"ecgWaveform\": [0.1, 0.2, 0.8, 1.2, 0.5, 0.1, -0.1, 0.0]\n  }\n}\n```\n\n#### ⬅️ Server → Client: Simulation Complete\n```json\n{\n  \"type\": \"simulation_complete\",\n  \"sessionId\": \"sess_abc123\",\n  \"data\": {\n    \"finalScore\": 85,\n    \"grade\": \"A\",\n    \"feedback\": \"Excellent STEMI management. Rapid cath lab activation was key.\"\n  }\n}\n```\n\n#### ➡️ Client → Server: Unsubscribe\n```json\n{\n  \"type\": \"unsubscribe\",\n  \"sessionId\": \"sess_abc123\"\n}\n```\n\n#### ⬅️ Server → Client: Error\n```json\n{\n  \"type\": \"error\",\n  \"code\": 4001,\n  \"message\": \"Unauthorized: Invalid or expired token\"\n}\n```\n\n---\n\n### WebSocket Close Codes\n| Code | Reason                         |\n|------|--------------------------------|\n| 1000 | Normal closure                 |\n| 4001 | Unauthorized / Invalid token   |\n| 4004 | Session not found              |\n| 4429 | Rate limit exceeded            |\n| 1011 | Internal server error          |"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('clinicaone@gmail.com')
+  const [password, setPassword] = useState('Clinicaone@123')
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<'login' | 'signin'>('login')
   const navigate = useNavigate()

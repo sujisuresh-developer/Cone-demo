@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import {
   Clock,
   Undo2,
@@ -6,29 +6,31 @@ import {
 } from 'lucide-react'
 import VitalsDetailModal, {
   getEcgValue,
-  getBpValue,
   getPlethValue,
   getRespValue,
-  getTempVal,
 } from './VitalsDetailModal'
 import { type Vitals, type ScenarioMode } from '../App'
 
+// Pneumothorax is a respiratory/hemodynamic presentation — Temperature never moves meaningfully
+// across any state in this case (36.6-37.4 throughout, arrival through death) and isn't part of
+// the clinical picture being taught here, so it's deliberately left off this list.
 const PLACEHOLDER_VITALS = [
-  { label: 'Heart Rate', unit: 'bpm', normal: '60-100' },
-  { label: 'Blood Pressure', unit: 'mmHg', normal: '90-120/60-80' },
-  { label: 'SpO2', unit: '%', normal: '95-100' },
-  { label: 'Resp Rate', unit: '/min', normal: '12-20' },
-  { label: 'Temperature', unit: '°C', normal: '36.1-37.2' },
+  { label: 'Heart Rate', unit: 'bpm', normal: '60-100', showTrend: true },
+  { label: 'Blood Pressure', unit: 'mmHg', normal: '90-120/60-80', showTrend: false },
+  { label: 'SpO2', unit: '%', normal: '95-100', showTrend: true },
+  { label: 'Resp Rate', unit: '/min', normal: '12-20', showTrend: true },
 ]
 
 function PlaceholderVitalCard({
   label,
   unit,
   normal,
+  showTrend,
 }: {
   label: string
   unit: string
   normal: string
+  showTrend: boolean
 }) {
   return (
     <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-2.5">
@@ -39,8 +41,8 @@ function PlaceholderVitalCard({
           <span className="text-[11px] font-normal text-gray-400">{unit}</span>
         </span>
       </div>
-      <div className="vital-dots mt-1 h-10 w-full rounded" />
-      <p className="mt-0.5 text-right text-[9px] text-gray-400">Normal: {normal}</p>
+      {showTrend && <div className="vital-dots mt-1 h-10 w-full rounded" />}
+      <p className={`${showTrend ? 'mt-0.5' : 'mt-2'} text-right text-[9px] text-gray-400`}>Normal: {normal}</p>
     </div>
   )
 }
@@ -57,6 +59,7 @@ function LiveVitalCard({
   vitalIndex,
   vitals,
   scenario,
+  showTrend = true,
 }: {
   label: string
   value: string
@@ -68,6 +71,7 @@ function LiveVitalCard({
   vitalIndex: number
   vitals: Vitals
   scenario?: ScenarioMode
+  showTrend?: boolean
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef(0)
@@ -80,6 +84,7 @@ function LiveVitalCard({
   })
 
   useEffect(() => {
+    if (!showTrend) return
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -142,14 +147,10 @@ function LiveVitalCard({
           let val = 0
           if (vitalIndex === 0) {
             val = getEcgValue(tx, vitals.hr, scenario)
-          } else if (vitalIndex === 1) {
-            val = getBpValue(tx, vitals.hr)
           } else if (vitalIndex === 2) {
             val = getPlethValue(tx, vitals.hr)
           } else if (vitalIndex === 3) {
             val = getRespValue(tx, vitals.rr)
-          } else if (vitalIndex === 4) {
-            val = getTempVal(tx)
           }
           yPoints[currIdx] = val
         }
@@ -205,7 +206,7 @@ function LiveVitalCard({
 
     animRef.current = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(animRef.current)
-  }, [waveColor, vitalIndex, vitals, scenario])
+  }, [showTrend, waveColor, vitalIndex, vitals, scenario])
 
   return (
     <div className={`rounded-xl border-2 ${border} bg-white px-4 py-2.5`}>
@@ -216,12 +217,14 @@ function LiveVitalCard({
           <span className="text-[11px] font-normal text-gray-500">{unit}</span>
         </span>
       </div>
-      <canvas
-        ref={canvasRef}
-        className="mt-1.5 h-10 w-full rounded"
-        style={{ display: 'block' }}
-      />
-      <p className={`mt-0.5 text-right text-[9px] font-semibold ${statusColor}`}>
+      {showTrend && (
+        <canvas
+          ref={canvasRef}
+          className="mt-1.5 h-10 w-full rounded"
+          style={{ display: 'block' }}
+        />
+      )}
+      <p className={`${showTrend ? 'mt-0.5' : 'mt-2'} text-right text-[9px] font-semibold ${statusColor}`}>
         {status}
       </p>
     </div>
@@ -236,10 +239,21 @@ type RightSidebarProps = {
   onHandOff: () => void
   caseEnded: boolean
   scenario: ScenarioMode
+  vitalsModalOpen: boolean
+  onVitalsModalOpenChange: (open: boolean) => void
 }
 
-export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown, vitals, onHandOff, caseEnded, scenario }: RightSidebarProps) {
-  const [vitalsModalOpen, setVitalsModalOpen] = useState(false)
+export default function RightSidebar({
+  monitorAttached,
+  secondsLeft,
+  onTickDown,
+  vitals,
+  onHandOff,
+  caseEnded,
+  scenario,
+  vitalsModalOpen,
+  onVitalsModalOpenChange,
+}: RightSidebarProps) {
 
   const dynamicVitals = [
     {
@@ -261,6 +275,7 @@ export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown,
       statusColor: vitals.bp.startsWith('70') || vitals.bp.startsWith('65') || vitals.bp.startsWith('92') || vitals.bp.startsWith('86') ? 'text-red-500' : vitals.bp === '110/70' ? 'text-green-600' : 'text-yellow-600',
       waveColor: vitals.bp.startsWith('70') || vitals.bp.startsWith('65') || vitals.bp.startsWith('92') || vitals.bp.startsWith('86') ? '#ef4444' : vitals.bp === '110/70' ? '#22c55e' : '#eab308',
       waveSpeed: vitals.bp === '110/70' ? 0.45 : 0.6,
+      showTrend: false,
     },
     {
       label: 'SpO2',
@@ -281,16 +296,6 @@ export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown,
       statusColor: vitals.rr >= 30 ? 'text-red-500' : vitals.rr > 20 ? 'text-orange-500' : 'text-green-600',
       waveColor: vitals.rr >= 30 ? '#ef4444' : vitals.rr > 20 ? '#f97316' : '#22c55e',
       waveSpeed: vitals.rr >= 30 ? 0.7 : vitals.rr > 20 ? 0.55 : 0.35,
-    },
-    {
-      label: 'Temperature',
-      value: String(vitals.temp),
-      unit: '°C',
-      status: 'Within Range',
-      border: 'border-green-400',
-      statusColor: 'text-green-600',
-      waveColor: '#22c55e',
-      waveSpeed: 0.25,
     },
   ]
 
@@ -356,7 +361,7 @@ export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown,
           <h2 className="text-[15px] font-semibold text-gray-800">Live Vitals</h2>
           <button
             type="button"
-            onClick={() => setVitalsModalOpen(true)}
+            onClick={() => onVitalsModalOpenChange(true)}
             className="rounded-full p-1 transition-colors hover:bg-gray-100"
           >
             <Info className="h-4 w-4 text-gray-400" />
@@ -390,7 +395,7 @@ export default function RightSidebar({ monitorAttached, secondsLeft, onTickDown,
       {/* Vitals Detail Modal */}
       <VitalsDetailModal
         open={vitalsModalOpen}
-        onClose={() => setVitalsModalOpen(false)}
+        onClose={() => onVitalsModalOpenChange(false)}
         vitals={vitals}
         scenario={scenario}
       />

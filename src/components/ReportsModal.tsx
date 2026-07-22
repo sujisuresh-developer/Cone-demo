@@ -7,6 +7,7 @@ import {
   Scissors,
   Eye,
 } from 'lucide-react'
+import { OUTCOME_ACTION_IDS } from './LeftSidebar'
 
 type Props = {
   open: boolean
@@ -15,8 +16,8 @@ type Props = {
   onViewOutcome: (actionId: string) => void
 }
 
-const MEDICATIONS_IDS = new Set(['oxygen', 'nitroglycerin', 'heparin', 'thrombolysis', 'vasopressors'])
-const PROCEDURES_IDS = new Set(['needle-decomp', 'intubation-ppv'])
+const MEDICATIONS_IDS = new Set(['oxygen'])
+const PROCEDURES_IDS = new Set(['needle-decompression', 'chest-tube'])
 
 export default function ReportsModal({ open, onClose, performedActions, onViewOutcome }: Props) {
   const [isVisible, setIsVisible] = useState(false)
@@ -44,51 +45,42 @@ export default function ReportsModal({ open, onClose, performedActions, onViewOu
 
   // Compute dynamic reports - Diagnostics tab actions
   const diagnosticsItems: { actionId: string; text: string; image?: string }[] = []
+  if (performedSet.has('history-taking')) {
+    diagnosticsItems.push({
+      actionId: 'history-taking',
+      text: 'History: Sudden-onset right-sided chest pain and dyspnea ~20 min ago. No trauma. Mild asthma.',
+    })
+  }
+  if (performedSet.has('physical-exam')) {
+    diagnosticsItems.push({
+      actionId: 'physical-exam',
+      text: 'Exam: Diminished breath sounds on the right, hyperresonant to percussion, tachypneic and diaphoretic.',
+    })
+  }
   if (performedSet.has('attach-monitor')) {
     diagnosticsItems.push({
       actionId: 'attach-monitor',
       text: 'Monitor: Attached. Live vital signs recording active.',
     })
   }
-  if (performedSet.has('lung-ultrasound')) {
+  if (performedSet.has('pocus')) {
     diagnosticsItems.push({
-      actionId: 'lung-ultrasound',
-      text: 'Bedside Lung US: Absent pleural sliding & A-lines in the right chest (pneumothorax).',
+      actionId: 'pocus',
+      text: 'POCUS: Absent lung sliding & barcode sign on M-mode in the right chest (pneumothorax).',
       image: '/us-pneumothorax.png.png',
     })
   }
   if (performedSet.has('chest-xray')) {
     diagnosticsItems.push({
       actionId: 'chest-xray',
-      text: 'Portable CXR: Large right-sided pneumothorax with mediastinal shift to the left.',
+      text: 'Chest X-Ray: Visceral pleural line with absent lung markings peripherally — right-sided pneumothorax.',
       image: '/xray-pneumothorax.png.png',
     })
   }
-  if (performedSet.has('ecg-troponin')) {
+  if (performedSet.has('blood-panel')) {
     diagnosticsItems.push({
-      actionId: 'ecg-troponin',
-      text: '12-Lead ECG: Sinus Tachycardia (108 bpm). Troponin I: Normal (< 0.01 ng/mL).',
-      image: '/ecg-sinus-tach.png.png',
-    })
-  }
-  if (performedSet.has('ctpa')) {
-    diagnosticsItems.push({
-      actionId: 'ctpa',
-      text: 'CTPA Scan: No PE. Confirms massive right-sided tension pneumothorax.',
-      image: '/ctpa-normal.png.png',
-    })
-  }
-  if (performedSet.has('ddimer-bnp')) {
-    diagnosticsItems.push({
-      actionId: 'ddimer-bnp',
-      text: 'Labs: D-Dimer normal (230 ng/mL), BNP normal (35 pg/mL).',
-    })
-  }
-  if (performedSet.has('leg-ultrasound')) {
-    diagnosticsItems.push({
-      actionId: 'leg-ultrasound',
-      text: 'Leg US: Deep veins patent and compressible; negative for DVT.',
-      image: '/dvt-negative.png.png',
+      actionId: 'blood-panel',
+      text: 'Basic Blood Panel: Routine bloods unremarkable — not diagnostic for pneumothorax.',
     })
   }
 
@@ -98,35 +90,23 @@ export default function ReportsModal({ open, onClose, performedActions, onViewOu
   // Medications tab actions
   const medicationsItems: string[] = []
   if (performedSet.has('oxygen')) {
-    medicationsItems.push('Supplemental O2: Administered via non-rebreather mask; SpO₂ increased to 96%.')
-  }
-  if (performedSet.has('nitroglycerin')) {
-    medicationsItems.push('Nitroglycerin SL: Administered 0.4mg; BP dropped slightly. Hypoxia/tachypnea persists.')
-  }
-  if (performedSet.has('heparin')) {
-    medicationsItems.push('Heparin IV: Anticoagulant bolus administered. Vitals unchanged.')
-  }
-  if (performedSet.has('thrombolysis')) {
-    medicationsItems.push('Thrombolysis (Alteplase): Administered. WARNING: Major medical error. Thrombolytics contraindicated.')
-  }
-  if (performedSet.has('vasopressors')) {
-    medicationsItems.push('Norepinephrine IV: Infusion started. BP transiently increased to 145/90.')
+    medicationsItems.push('Oxygen: Supplemental oxygen administered — buys time, not definitive.')
   }
 
   // Procedures tab actions
   const proceduresItems: string[] = []
-  if (performedSet.has('needle-decomp')) {
-    proceduresItems.push('Needle Decompression: 14g angiocath inserted in right 2nd ICS MCL. Air release. Vitals stabilized.')
+  if (performedSet.has('needle-decompression')) {
+    proceduresItems.push('Needle Decompression: 2nd intercostal space, midclavicular line. Rush of air — immediate improvement in vitals.')
   }
-  if (performedSet.has('intubation-ppv')) {
-    proceduresItems.push('Intubation & PPV: WARNING: Positive pressure ventilation initiated in un-decompressed tension pneumothorax. Immediate cardiovascular collapse!')
+  if (performedSet.has('chest-tube')) {
+    proceduresItems.push('Chest Tube: Placed. Re-expansion of the lung confirmed on repeat imaging, appropriate drainage.')
   }
 
   const reportCards = [
     {
       title: 'Diagnostics',
       description:
-        'Summary of all diagnostic imaging scans, ECG rhythm strips, and lab panels ordered.',
+        'Summary of history, exam findings, imaging, and labs obtained during the workup.',
       icon: Radio,
       color: '#0061ff',
       bgGradient: 'linear-gradient(135deg, #eef4ff 0%, #dbeafe 100%)',
@@ -145,7 +125,7 @@ export default function ReportsModal({ open, onClose, performedActions, onViewOu
     {
       title: 'Procedures',
       description:
-        'Physical airway interventions and emergency decompressive surgeries performed.',
+        'Decompressive and definitive procedures performed for the tension pneumothorax.',
       icon: Scissors,
       color: '#8b5cf6',
       bgGradient: 'linear-gradient(135deg, #f5f3ff 0%, #e0e7ff 100%)',
@@ -154,7 +134,7 @@ export default function ReportsModal({ open, onClose, performedActions, onViewOu
   ].filter((card) => card.items.length > 0)
 
   const firstDiagnosticWithOutcome = diagnosticsItems.find(
-    (item) => item.actionId !== 'attach-monitor'
+    (item) => OUTCOME_ACTION_IDS.has(item.actionId)
   )?.actionId
 
   return (
@@ -247,8 +227,8 @@ export default function ReportsModal({ open, onClose, performedActions, onViewOu
                       <div className="flex flex-wrap gap-1 p-1.5 justify-center items-center w-full">
                         {performedActions.filter(id => PROCEDURES_IDS.has(id)).map((id) => (
                           <span key={id} className={`text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/90 border uppercase tracking-wider card-shadow ${
-                            id === 'needle-decomp' 
-                              ? 'border-purple-200 text-purple-800' 
+                            id === 'needle-decompression'
+                              ? 'border-purple-200 text-purple-800'
                               : 'border-red-200 text-red-800'
                           }`}>
                             {id.replace('-', ' ')}
@@ -307,7 +287,7 @@ export default function ReportsModal({ open, onClose, performedActions, onViewOu
                       const isDiagnostics = card.title === 'Diagnostics'
                       const text = isDiagnostics ? (item as any).text : (item as string)
                       const actionId = isDiagnostics ? (item as any).actionId : null
-                      const isClickable = isDiagnostics && actionId && actionId !== 'attach-monitor'
+                      const isClickable = isDiagnostics && actionId && OUTCOME_ACTION_IDS.has(actionId)
 
                       return (
                         <li

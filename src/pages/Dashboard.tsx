@@ -112,7 +112,7 @@ function CalendarWidget() {
 const NAV = [
   { Icon: Home, path: '/dashboard', label: 'Dashboard' },
   { Icon: Bandage, path: '/cases', label: 'Simulation' },
-  { Icon: UserCheck, path: '#', label: 'Reports' },
+  { Icon: UserCheck, path: '/mcq', label: 'MCQ Questions' },
   { Icon: Settings, path: '#', label: 'Settings' },
 ]
 
@@ -123,7 +123,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="flex h-screen w-screen overflow-hidden page-enter"
+      className="flex h-screen w-screen overflow-hidden"
       style={{ background: '#faf9f6', fontFamily: "'Inter', system-ui, sans-serif" }}
     >
       {/* ── Sidebar ── */}
@@ -220,7 +220,7 @@ export default function Dashboard() {
       </aside>
 
       {/* ── Main ── */}
-      <main className="flex-1 flex flex-col overflow-hidden py-4 pr-4">
+      <main className="flex-1 flex flex-col overflow-hidden py-4 pr-4 page-swipe-down">
         {/* Header */}
         <div className="flex items-start justify-between mb-5 flex-shrink-0">
           <div>
