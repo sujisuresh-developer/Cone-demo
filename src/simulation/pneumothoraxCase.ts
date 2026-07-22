@@ -242,11 +242,12 @@ export const ACTIONS: CaseAction[] = [
     timeCost: 180,
     resultText:
       'Absent lung sliding on the right side (barcode sign on M-mode) — confirms pneumothorax at the bedside.',
-    observationQuestion: 'What ultrasound finding confirms the suspected condition?',
+    observationQuestion: 'What ultrasound findings confirm the suspected condition?',
     observationChoices: [
       { text: 'Absent lung sliding / barcode sign on M-mode', isCorrect: true },
+      { text: 'Lung Point at the border of collapsed lung', isCorrect: true },
       { text: 'B-lines throughout the lung field', isCorrect: false },
-      { text: 'Normal seashore sign', isCorrect: false },
+      { text: 'Normal seashore sign on M-mode', isCorrect: false },
     ],
   },
   {
