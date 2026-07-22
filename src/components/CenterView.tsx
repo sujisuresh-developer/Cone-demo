@@ -34,7 +34,6 @@ export default function CenterView({
   onSend,
   performedActions,
   onViewOutcome,
-  _onViewPatientDetails,
   onUseHint,
   isMuted,
   isSoundOn,
