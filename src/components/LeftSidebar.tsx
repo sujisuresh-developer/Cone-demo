@@ -1,50 +1,15 @@
-import { Info, Search, Bed, Radio, Clock, Check } from 'lucide-react'
+import { Info, Search, Bed, Radio, Clock } from 'lucide-react'
 import { useState } from 'react'
-import type { ActionTab } from './CenterView'
+import { ACTIONS, PATIENT } from '../simulation/pneumothoraxCase'
+import PatientMedia, { VIDEO_EXTENSIONS } from './PatientMedia'
 
-/* ─── Action definitions per tab ─── */
 
-type ActionItem = {
-  id: string
-  label: string
-  timePenalty: number        // seconds deducted
-  timeLabel: string          // display string
-  hasToggle?: boolean        // only for Attach Monitor
-}
+/** Diagnostics actions that open a rich result panel (OutcomeModal) instead of just logging "Done". */
+export const OUTCOME_ACTION_IDS = new Set(['pocus', 'chest-xray', 'blood-panel', 'troponin'])
 
-const DIAGNOSTICS_ACTIONS: ActionItem[] = [
-  { id: 'attach-monitor', label: 'Attach Monitor', timePenalty: 0, timeLabel: '—', hasToggle: true },
-  { id: 'lung-ultrasound', label: 'Lung Ultrasound (Bedside)', timePenalty: 30, timeLabel: '30s' },
-  { id: 'chest-xray', label: 'Chest X-Ray (Portable)', timePenalty: 480, timeLabel: '8 min' },
-  { id: 'ecg-troponin', label: '12-Lead ECG & Troponin', timePenalty: 180, timeLabel: '3 min' },
-  { id: 'ctpa', label: 'CT Pulmonary Angiography', timePenalty: 600, timeLabel: '10 min' },
-  { id: 'ddimer-bnp', label: 'D-Dimer & BNP Labs', timePenalty: 180, timeLabel: '3 min' },
-  { id: 'leg-ultrasound', label: 'Leg Ultrasound (DVT)', timePenalty: 120, timeLabel: '2 min' },
-]
-
-const MEDICATIONS_ACTIONS: ActionItem[] = [
-  { id: 'oxygen', label: 'Administer Oxygen (NC / NRB)', timePenalty: 15, timeLabel: '15s' },
-  { id: 'nitroglycerin', label: 'Nitroglycerin 0.4mg SL', timePenalty: 15, timeLabel: '15s' },
-  { id: 'heparin', label: 'Administer Heparin', timePenalty: 30, timeLabel: '30s' },
-  { id: 'thrombolysis', label: 'Systemic Thrombolysis (Alteplase)', timePenalty: 60, timeLabel: '60s' },
-  { id: 'vasopressors', label: 'Vasopressors (Norepinephrine)', timePenalty: 60, timeLabel: '60s' },
-]
-
-const PROCEDURES_ACTIONS: ActionItem[] = [
-  { id: 'needle-decomp', label: 'Needle Decompression (14g)', timePenalty: 45, timeLabel: '45s' },
-  { id: 'intubation-ppv', label: 'Intubation / PPV', timePenalty: 60, timeLabel: '60s' },
-]
-
-const TAB_ACTIONS: Record<ActionTab, ActionItem[]> = {
-  diagnostics: DIAGNOSTICS_ACTIONS,
-  medications: MEDICATIONS_ACTIONS,
-  procedures: PROCEDURES_ACTIONS,
-}
-
-const TAB_LABELS: Record<ActionTab, string> = {
-  diagnostics: 'Diagnostics',
-  medications: 'Medications',
-  procedures: 'Procedures',
+function formatTimeLabel(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`
+  return `${Math.round(seconds / 60)} min`
 }
 
 /* ─── Toggle component ─── */
@@ -74,10 +39,11 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 type LeftSidebarProps = {
   monitorAttached: boolean
   onMonitorChange: (v: boolean) => void
-  activeTab: ActionTab
   performed: string[]
-  onPerform: (actionId: string, timePenalty: number) => void
-  onViewOutcome: (actionId: string) => void
+  /** Action ids reachable from the current graph node — only these are ever shown. */
+  availableActionIds: Set<string>
+  currentStateName: string
+  onPerform: (actionId: string) => void
   onViewPatientDetails: () => void
   patientImage: string
 }
@@ -85,23 +51,21 @@ type LeftSidebarProps = {
 export default function LeftSidebar({
   monitorAttached,
   onMonitorChange,
-  activeTab,
   performed,
+  availableActionIds,
+  currentStateName,
   onPerform,
-  onViewOutcome,
   onViewPatientDetails,
   patientImage,
 }: LeftSidebarProps) {
   const [search, setSearch] = useState('')
 
-  const actions = TAB_ACTIONS[activeTab]
-  const filtered = actions.filter((a) =>
-    a.label.toLowerCase().includes(search.toLowerCase())
-  )
+  const actions = ACTIONS.filter((a) => availableActionIds.has(a.id))
+  const filtered = actions.filter((a) => a.name.toLowerCase().includes(search.toLowerCase()))
 
-  const handlePerform = (action: ActionItem) => {
-    if (performed.includes(action.id)) return // already done
-    onPerform(action.id, action.timePenalty)
+  const handlePerform = (actionId: string) => {
+    if (performed.includes(actionId)) return // already done
+    onPerform(actionId)
   }
 
   return (
@@ -114,22 +78,33 @@ export default function LeftSidebar({
         </div>
 
         <div className="relative overflow-hidden rounded-2xl bg-gray-900">
-          <img
+          {VIDEO_EXTENSIONS.test(patientImage) && (
+            <PatientMedia
+              src="action-images/patient-without-monitor.png"
+              alt={PATIENT.name}
+              className="h-[170px] w-full object-cover object-top"
+            />
+          )}
+          <PatientMedia
             key={patientImage}
-            src={`/${patientImage}`}
-            alt="Mr. Will Jacks"
-            className="h-[170px] w-full object-cover object-top animate-fade-in"
+            src={patientImage}
+            alt={PATIENT.name}
+            className={`${
+              VIDEO_EXTENSIONS.test(patientImage) ? 'absolute inset-0' : ''
+            } h-[170px] w-full object-cover object-top`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
           <div className="absolute right-0 bottom-0 left-0 p-3.5">
             <div className="flex items-center justify-between text-white">
-              <h3 className="text-[14px] font-semibold">Mr. Will Jacks</h3>
+              <h3 className="text-[14px] font-semibold">{PATIENT.name}</h3>
               <div className="flex items-center gap-1 text-[10px] text-gray-300">
                 <Bed className="h-3 w-3" />
                 <span>05/06/26</span>
               </div>
             </div>
-            <p className="mt-0.5 text-[10px] text-gray-300">58 Yr • 82 Kg • Male</p>
+            <p className="mt-0.5 text-[10px] text-gray-300">
+              {PATIENT.age} Yr • {PATIENT.weight} Kg • {PATIENT.gender}
+            </p>
             <button
               type="button"
               onClick={onViewPatientDetails}
@@ -146,14 +121,10 @@ export default function LeftSidebar({
         <div className="mb-0.5 flex items-center justify-between">
           <h2 className="text-[14px] font-semibold text-gray-800">Choose an Action</h2>
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold text-primary">
-            {TAB_LABELS[activeTab]}
+            {currentStateName}
           </span>
         </div>
-        <p className="mb-2 text-[9px] text-gray-400">
-          {activeTab === 'diagnostics' && 'Order clinical tests & imaging'}
-          {activeTab === 'medications' && 'Administer pharmacological interventions'}
-          {activeTab === 'procedures' && 'Perform physical medical interventions'}
-        </p>
+        <p className="mb-2 text-[9px] text-gray-400">Only what's clinically available right now is shown here.</p>
 
         <div className="relative mb-2.5">
           <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
@@ -168,89 +139,53 @@ export default function LeftSidebar({
 
         <div className="relative min-h-0 flex-1 pl-1">
           <div className="absolute top-1 bottom-4 left-0 w-[3px] rounded-full bg-primary" />
-          <div key={activeTab} className="action-slide-in h-full">
-          <ul className="action-scroll h-full space-y-0.5 overflow-y-auto pl-4">
-            {filtered.map((action) => {
-              const isDone = performed.includes(action.id)
-              const hasOutcome = activeTab === 'diagnostics' && action.id !== 'attach-monitor'
-              return (
+          <div key={currentStateName} className="action-slide-in h-full">
+            <ul className="action-scroll h-full space-y-0.5 overflow-y-auto pl-4">
+              <li className="flex items-center justify-between rounded-lg py-1.5 pr-1">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white">
+                    <Radio className="h-4 w-4 text-gray-400" strokeWidth={1.5} />
+                  </div>
+                  <span className="block text-[13px] leading-tight text-gray-700">Attach Monitor</span>
+                </div>
+                <Toggle on={monitorAttached} onChange={onMonitorChange} />
+              </li>
+
+              {filtered.map((action) => (
                 <li
                   key={action.id}
-                  className={`flex items-center justify-between rounded-lg py-1.5 pr-1 transition-colors hover:bg-gray-50 cursor-pointer ${
-                    isDone && !hasOutcome ? 'opacity-50' : ''
-                  }`}
-                  onClick={() => {
-                    if (action.hasToggle) return
-                    if (isDone) {
-                      if (hasOutcome) onViewOutcome(action.id)
-                    } else {
-                      handlePerform(action)
-                    }
-                  }}
+                  className="flex cursor-pointer items-center justify-between rounded-lg py-1.5 pr-1 transition-colors hover:bg-gray-50"
+                  onClick={() => handlePerform(action.id)}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${
-                        isDone
-                          ? 'border-green-300 bg-green-50'
-                          : 'border-gray-200 bg-white'
-                      }`}
-                    >
-                      {isDone ? (
-                        <Check className="h-4 w-4 text-green-500" strokeWidth={2.5} />
-                      ) : (
-                        <Radio className="h-4 w-4 text-gray-400" strokeWidth={1.5} />
-                      )}
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white">
+                      <Radio className="h-4 w-4 text-gray-400" strokeWidth={1.5} />
                     </div>
                     <div className="min-w-0">
-                      <span className={`block text-[13px] leading-tight ${isDone && !hasOutcome ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
-                        {action.label}
+                      <span className="block text-[13px] leading-tight text-gray-700">{action.name}</span>
+                      <span className="mt-0.5 flex items-center gap-1 text-[10px] text-gray-400">
+                        <Clock className="h-3 w-3" />
+                        {formatTimeLabel(action.timeCost)}
                       </span>
-                      {!action.hasToggle && (
-                        <span className="mt-0.5 flex items-center gap-1 text-[10px] text-gray-400">
-                          <Clock className="h-3 w-3" />
-                          {action.timeLabel}
-                        </span>
-                      )}
                     </div>
                   </div>
-                  {action.hasToggle && (
-                    <Toggle
-                      on={monitorAttached}
-                      onChange={(v) => onMonitorChange(v)}
-                    />
-                  )}
-                  {!action.hasToggle && !isDone && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handlePerform(action)
-                      }}
-                      className="shrink-0 rounded-lg bg-primary/10 px-3 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/20"
-                    >
-                      Perform
-                    </button>
-                  )}
-                  {isDone && hasOutcome && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onViewOutcome(action.id)
-                      }}
-                      className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-primary-hover shadow-sm"
-                    >
-                      View
-                    </button>
-                  )}
-                  {isDone && !action.hasToggle && !hasOutcome && (
-                    <span className="shrink-0 text-[10px] font-medium text-green-500 mr-2">Done</span>
-                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handlePerform(action.id)
+                    }}
+                    className="shrink-0 rounded-lg bg-primary/10 px-3 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/20"
+                  >
+                    Perform
+                  </button>
                 </li>
-              )
-            })}
-          </ul>
+              ))}
+
+              {filtered.length === 0 && (
+                <li className="px-1 py-6 text-center text-[12px] text-gray-400">No actions available right now.</li>
+              )}
+            </ul>
           </div>
         </div>
       </div>

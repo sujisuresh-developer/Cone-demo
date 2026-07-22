@@ -9,6 +9,7 @@ import {
   FileText,
   Calendar,
 } from 'lucide-react'
+import { PATIENT } from '../simulation/pneumothoraxCase'
 
 type Props = {
   open: boolean
@@ -54,7 +55,7 @@ export default function PatientDetailModal({ open, onClose }: Props) {
           <div className="h-[200px] md:h-[260px] relative overflow-hidden">
             <img
               src="/p.png"
-              alt="Mr. Will Jacks"
+              alt={PATIENT.name}
               className="w-full h-full object-cover object-top opacity-90"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/20 to-transparent" />
@@ -66,21 +67,21 @@ export default function PatientDetailModal({ open, onClose }: Props) {
                 <Heart size={10} className="fill-current animate-pulse" />
                 <span>Active Patient</span>
               </div>
-              <h2 className="text-[19px] font-extrabold tracking-tight">Mr. Will Jacks</h2>
+              <h2 className="text-[19px] font-extrabold tracking-tight">{PATIENT.name}</h2>
               <span className="text-[11px] text-gray-400 font-mono block mt-0.5">MRN: #302-884-A</span>
 
               <div className="mt-4 space-y-2 text-[12px] text-gray-300 border-t border-gray-800/80 pt-3">
                 <div className="flex justify-between">
                   <span className="text-gray-500 font-medium">Age / Sex</span>
-                  <span className="font-semibold text-gray-200">58 Yr / Male</span>
+                  <span className="font-semibold text-gray-200">{PATIENT.age} Yr / {PATIENT.gender}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500 font-medium">Weight</span>
-                  <span className="font-semibold text-gray-200">82 Kg</span>
+                  <span className="font-semibold text-gray-200">{PATIENT.weight} Kg</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500 font-medium">Height</span>
-                  <span className="font-semibold text-gray-200">178 cm</span>
+                  <span className="font-semibold text-gray-200">{PATIENT.height} cm</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500 font-medium">Blood Type</span>

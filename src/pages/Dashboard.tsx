@@ -241,12 +241,15 @@ export default function Dashboard() {
               className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
               style={{ background: '#d1d5db' }}
             >
-              <img
-                src="/patient-without-monitor.png"
-                alt="Profile"
+              <video
+                src="/patient-without-monitor.mp4"
                 className="w-full h-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
                 onError={e => {
-                  (e.currentTarget as HTMLImageElement).style.display = 'none'
+                  (e.currentTarget as HTMLVideoElement).style.display = 'none'
                 }}
               />
               <span className="text-[11px] font-bold text-gray-500 absolute">WD</span>
@@ -316,10 +319,13 @@ export default function Dashboard() {
                   className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0"
                   style={{ background: '#d1d5db' }}
                 >
-                  <img
-                    src="/patient-without-monitor.png"
-                    alt="Patient"
+                  <video
+                    src="/patient-without-monitor.mp4"
                     className="w-full h-full object-cover object-top"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
                     onError={e => { e.currentTarget.style.display = 'none' }}
                   />
                 </div>

@@ -379,11 +379,14 @@ export default function CasesPage() {
             <div
               className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-white"
             >
-              <img
-                src="/patient-without-monitor.png"
-                alt="Profile"
+              <video
+                src="/patient-without-monitor.mp4"
                 className="w-full h-full object-cover"
-                onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                autoPlay
+                muted
+                loop
+                playsInline
+                onError={e => { (e.currentTarget as HTMLVideoElement).style.display = 'none' }}
               />
             </div>
           </div>
