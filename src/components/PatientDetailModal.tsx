@@ -8,6 +8,7 @@ import {
   Pill,
   FileText,
   Calendar,
+  ShieldAlert,
 } from 'lucide-react'
 import { PATIENT } from '../simulation/pneumothoraxCase'
 
@@ -87,6 +88,12 @@ export default function PatientDetailModal({ open, onClose }: Props) {
                   <span className="text-gray-500 font-medium">Blood Type</span>
                   <span className="font-semibold text-gray-200">O Positive</span>
                 </div>
+                <div className="flex justify-between items-center pt-1 border-t border-gray-800/50">
+                  <span className="text-gray-500 font-medium">Code Status</span>
+                  <span className="font-extrabold text-[10px] text-emerald-400 bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-800/80 tracking-wide uppercase">
+                    Full Code
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -122,6 +129,23 @@ export default function PatientDetailModal({ open, onClose }: Props) {
 
           {/* Details Scroll Content */}
           <div className="flex-1 overflow-y-auto p-5 space-y-5">
+            {/* 0. Case Status */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
+                <ShieldAlert size={14} className="text-emerald-600" />
+                <span>Medical Case & Code Status</span>
+              </div>
+              <div className="bg-emerald-50/40 border border-emerald-100/80 rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <span className="text-[11.5px] font-bold text-gray-800 block">Case Resuscitation Status</span>
+                  <span className="text-[10.5px] text-gray-500 block">Full Code — All resuscitation, diagnostic & intervention protocols active.</span>
+                </div>
+                <span className="px-2.5 py-1 text-[10.5px] font-extrabold text-emerald-700 bg-emerald-100 rounded-full border border-emerald-300 shrink-0 uppercase tracking-wider">
+                  Full Code
+                </span>
+              </div>
+            </div>
+
             {/* 1. Chief Complaint & HPI */}
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">

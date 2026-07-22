@@ -180,25 +180,12 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
                 {usView === 'left_lateral' && (
                   <img src="/us-lungpoint.png.png" alt="Lung Point Ultrasound" className="w-full h-auto" />
                 )}
-
-                <div className="absolute bottom-3 left-3 right-3 z-20 bg-black/85 border border-gray-800 rounded-lg p-2.5 text-[10.5px]">
-                  <span className="text-blue-400 font-bold block mb-0.5">
-                    {usView === 'right' ? 'Left Lung (Normal)' : usView === 'left_anterior' ? 'Right Lung (Anterior)' : 'Right Lung (Lateral Scan)'}
-                  </span>
-                  <span className="text-gray-300 leading-normal">
-                    {usView === 'right' && 'Normal pleural sliding. Seashore pattern.'}
-                    {usView === 'left_anterior' && 'Absent lung sliding. Multiple A-lines present — barcode sign on M-mode.'}
-                    {usView === 'left_lateral' && 'Lung Point detected: transition zone from seashore to barcode.'}
-                  </span>
-                </div>
               </div>
 
               <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
-                <h4 className="text-[11.5px] font-bold text-gray-800">Scan Finding</h4>
+                <h4 className="text-[11.5px] font-bold text-gray-800">Professional Suggestion</h4>
                 <p className="text-[11px] leading-relaxed text-gray-600">
-                  {usView === 'right' && 'Pleural sliding is present, ruling out pneumothorax in this zone.'}
-                  {usView === 'left_anterior' && 'No sliding is observed anteriorly. Visceral pleura is stationary relative to parietal pleura, confirming gas collection — this confirms the pneumothorax.'}
-                  {usView === 'left_lateral' && 'The pathognomonic "Lung Point" confirms the physical border of the collapsed lung tissue.'}
+                  Recommend immediate clinical correlation and appropriate management.
                 </p>
               </div>
 
@@ -211,13 +198,6 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
             <div className="space-y-3">
               <div className="relative border border-gray-200 bg-black rounded-xl overflow-hidden flex items-center justify-center">
                 <img src="/xray-pneumothorax.png.png" alt="Right Pneumothorax Chest X-Ray" className="w-full h-auto" />
-
-                <div className="absolute bottom-3 left-3 right-3 z-20 bg-white/95 border border-gray-150 rounded-lg p-2.5 text-[10.5px] shadow-sm">
-                  <span className="text-purple-600 font-bold block mb-0.5">Right-Sided Pneumothorax</span>
-                  <span className="text-gray-500 leading-normal block">
-                    Visceral pleural line with absent lung markings peripherally — confirms the pneumothorax, though slower to obtain than POCUS.
-                  </span>
-                </div>
               </div>
 
               <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
