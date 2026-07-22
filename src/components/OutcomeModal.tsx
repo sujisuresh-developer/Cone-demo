@@ -201,9 +201,9 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
               </div>
 
               <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
-                <span className="text-[11.5px] font-bold text-gray-800 block">Interpretation Note</span>
+                <span className="text-[11.5px] font-bold text-gray-800 block">Professional Suggestion</span>
                 <p className="text-[11px] leading-relaxed text-gray-600">
-                  Portable chest radiograph confirms a right-sided pneumothorax. Absent pulmonary vessels at the periphery confirm volume loss.
+                  Low-yield PE-differential test for this classic presentation.
                 </p>
               </div>
 
@@ -226,7 +226,7 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
               </div>
 
               <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
-                <span className="text-[11.5px] font-bold text-gray-800 block">Interpretation Note</span>
+                <span className="text-[11.5px] font-bold text-gray-800 block">Professional Suggestion</span>
                 <p className="text-[11px] leading-relaxed text-gray-600">
                   A normal blood count and chemistry panel neither confirms nor excludes a pneumothorax — imaging or bedside ultrasound is required to make the diagnosis.
                 </p>
@@ -251,7 +251,7 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
               </div>
 
               <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
-                <span className="text-[11.5px] font-bold text-gray-800 block">Interpretation Note</span>
+                <span className="text-[11.5px] font-bold text-gray-800 block">Professional Suggestion</span>
                 <p className="text-[11px] leading-relaxed text-gray-600">
                   A normal troponin helps exclude an acute cardiac event but says nothing about the chest — it isn't diagnostic for pneumothorax and shouldn't delay confirmatory imaging.
                 </p>
