@@ -89,6 +89,68 @@ function ObservationQuestion({ actionId }: { actionId: string }) {
   )
 }
 
+type BloodPanelRow = { item: string; result: number; low: number; high: number }
+
+const BLOOD_PANEL_ROWS: BloodPanelRow[] = [
+  { item: 'White blood count (K/UL)', result: 12.2, low: 4, high: 11 },
+  { item: 'Red blood count (M/UL)', result: 3.76, low: 4.2, high: 6.0 },
+  { item: 'Hemoglobin (g/dL)', result: 11.9, low: 12.0, high: 16.0 },
+  { item: 'Hematocrit (%)', result: 35.7, low: 40, high: 52 },
+  { item: 'Platelets (K/UL)', result: 257, low: 150, high: 400 },
+  { item: 'Sodium (mmol/L)', result: 134.0, low: 135, high: 145 },
+  { item: 'Potassium (mmol/L)', result: 3.8, low: 3.5, high: 5.5 },
+  { item: 'Chloride (mmol/L)', result: 107.0, low: 98, high: 107 },
+  { item: 'Bicarbonate (mmol/L)', result: 22.0, low: 22, high: 28 },
+  { item: 'Blood urea nitrogen (mg/dL)', result: 6.0, low: 7, high: 17 },
+  { item: 'Creatinine (mg/dL)', result: 0.71, low: 0.52, high: 1.04 },
+  { item: 'Glucose (mg/dL)', result: 122.0, low: 60, high: 110 },
+  { item: 'Calcium (mg/dL)', result: 8.9, low: 8.4, high: 10.6 },
+  { item: 'Alkaline phosphatase (U/L)', result: 137.0, low: 38, high: 126 },
+  { item: 'Alanine transaminase (U/L)', result: 14.0, low: 9, high: 52 },
+  { item: 'Aspartate transaminase (U/L)', result: 30.0, low: 15, high: 46 },
+  { item: 'Total protein (g/dL)', result: 7.1, low: 6.3, high: 8.2 },
+  { item: 'Albumin (g/dL)', result: 3.4, low: 3.5, high: 5.0 },
+  { item: 'Total bilirubin (mg/dL)', result: 0.5, low: 0.2, high: 1.3 },
+]
+
+function BloodPanelTable() {
+  return (
+    <table className="w-full text-[11px]">
+      <thead>
+        <tr className="border-b border-gray-200">
+          <th className="text-left font-bold text-gray-700 py-1.5 px-2">Item</th>
+          <th className="text-center font-bold text-gray-700 py-1.5 px-2">Result</th>
+          <th className="text-center font-bold text-gray-700 py-1.5 px-2">Normal range</th>
+        </tr>
+      </thead>
+      <tbody>
+        {BLOOD_PANEL_ROWS.map((row) => {
+          const isHigh = row.result > row.high
+          const isLow = row.result < row.low
+          const isAbnormal = isHigh || isLow
+          return (
+            <tr key={row.item} className={`border-b border-gray-100 last:border-0 ${isAbnormal ? 'bg-red-50' : ''}`}>
+              <td className="py-1.5 px-2 text-gray-700">{row.item}</td>
+              <td
+                className={`py-1.5 px-2 text-center font-bold ${
+                  isAbnormal ? 'text-red-600' : 'text-gray-800'
+                }`}
+              >
+                {row.result}
+                {isHigh && <span className="ml-1">&uarr;</span>}
+                {isLow && <span className="ml-1">&darr;</span>}
+              </td>
+              <td className="py-1.5 px-2 text-center text-gray-500">
+                {row.low}&ndash;{row.high}
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+}
+
 function ImpressionCard({ actionId }: { actionId: string }) {
   const [saved, setSaved] = useState(false)
   const isSavedAlready = isImpressionInNotepad(actionId)
@@ -280,11 +342,45 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
             </div>
           )}
 
+          {/* 12-Lead ECG */}
+          {actionId === 'ecg' && (
+            <div className="space-y-3">
+              <div className="relative border border-gray-200 bg-black rounded-xl overflow-hidden flex items-center justify-center">
+                <img src="/ecg-sinus-tach.png.png" alt="Sinus Tachycardia ECG" className="w-full h-auto" />
+              </div>
+
+              <ImpressionCard actionId={actionId} />
+
+              <ObservationQuestion actionId={actionId} />
+            </div>
+          )}
+
+          {/* D-Dimer Test */}
+          {actionId === 'd-dimer' && (
+            <div className="relative border border-gray-200 bg-black rounded-xl overflow-hidden flex items-center justify-center">
+              <img src="/action-images/D_timer_image.jpeg" alt="D-Dimer Test Result" className="w-full h-auto" />
+            </div>
+          )}
+
+          {/* Chest Tube */}
+          {actionId === 'chest-tube' && (
+            <div className="relative border border-gray-200 bg-black rounded-xl overflow-hidden flex items-center justify-center">
+              <img src="/action-images/chest_tube_image.jpeg" alt="Chest Tube Result" className="w-full h-auto" />
+            </div>
+          )}
+
+          {/* CT Chest */}
+          {actionId === 'ct-chest' && (
+            <div className="relative border border-gray-200 bg-black rounded-xl overflow-hidden flex items-center justify-center">
+              <img src="/action-images/CT-Scan Report.jpeg" alt="CT Chest Report" className="w-full h-auto" />
+            </div>
+          )}
+
           {/* Basic Blood Panel */}
           {actionId === 'blood-panel' && (
             <div className="space-y-3">
-              <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[340px] overflow-y-auto">
-                <img src="/action-images/basic-blood-test-result.webp" alt="Basic Blood Panel Result" className="w-full h-auto block" />
+              <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[340px] overflow-y-auto action-scroll">
+                <BloodPanelTable />
               </div>
 
               <div className="border border-purple-100 rounded-xl p-2.5 bg-purple-50/40">

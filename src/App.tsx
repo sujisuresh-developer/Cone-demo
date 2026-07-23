@@ -29,12 +29,11 @@ const VIDEO_OVERRIDE_BY_ACTION: Record<string, string> = {
   ecg: 'action-images/action_ecg.png',
   'iv-access': 'action-images/action_iv_access.png',
   troponin: 'action-images/action_troponin.png',
-  // No dedicated photo — clinically identical draw to troponin, reuses its overlay.
-  'd-dimer': 'action-images/action_troponin.png',
+  'd-dimer': 'action-images/D-Dimer Test perform.jpeg',
   abg: 'action-images/action_abg.png',
   'ct-chest': 'action-images/action_ct_chest.png',
   'senior-consult': 'action-images/action_senior_consult.png',
-  // 'analgesia-iv' has no sourced photo yet — falls back to the current base patient image.
+  'analgesia-iv': 'action-images/IV_analgesia Perform.jpeg',
 }
 
 /**
@@ -45,23 +44,28 @@ const VIDEO_OVERRIDE_BY_ACTION: Record<string, string> = {
  */
 const AFTER_ACTION_IMAGE: Record<string, string> = {
   'chest-tube': 'action-images/after_taking_chest_tube.png',
-  'needle-decompression': 'action-images/after_taking_needle_decompression.png',
+  'needle-decompression': 'action-images/after_taking_oxygen.png',
   oxygen: 'action-images/after_taking_oxygen.png',
   'iv-fluids': 'action-images/after_taking_iv_fluids.png',
   'iv-access': 'action-images/after_taking_iv_access.png',
   monitoring: 'action-images/after_taking_monitoring.png',
   abg: 'action-images/after_taking_abg.png',
-  'blood-panel': 'action-images/after_taking_blood_panel.png',
+  'blood-panel': 'action-images/fail.png',
   troponin: 'action-images/after_taking_blood_panel.png',
-  'd-dimer': 'action-images/after_taking_blood_panel.png',
+  'd-dimer': 'action-images/D-Dimmer Test After.jpeg',
   ecg: 'action-images/after_taking_ecg.png',
+  'physical-exam': 'action-images/fail.png',
+  'senior-consult': 'action-images/fail.png',
+  'analgesia-iv': 'action-images/IV Ang After.jpeg',
 }
 
-/** Highest-significance first — determines which persistent look wins when several apply. */
+/** Highest-significance first — determines which persistent look wins when several apply.
+ * oxygen sits at the very top: once oxygen therapy is given, its after-image should stick
+ * regardless of whichever other action is performed afterward. */
 const PERSISTENT_LOOK_PRIORITY = [
+  'oxygen',
   'chest-tube',
   'needle-decompression',
-  'oxygen',
   'iv-fluids',
   'iv-access',
   'monitoring',
@@ -70,6 +74,9 @@ const PERSISTENT_LOOK_PRIORITY = [
   'troponin',
   'd-dimer',
   'ecg',
+  'physical-exam',
+  'senior-consult',
+  'analgesia-iv',
 ]
 
 function formatClock(totalSeconds: number): string {
@@ -129,7 +136,6 @@ export default function App() {
 
   const handleMonitorChange = useCallback((attached: boolean) => {
     setMonitorAttached(attached)
-    if (attached) setVitalsModalOpen(true)
   }, [])
 
   const handlePerformAction = useCallback(
@@ -143,7 +149,7 @@ export default function App() {
       const hasOverride = !!overrideVideo
 
       if (hasOverride) {
-        triggerImageOverride(overrideVideo, 6000)
+        triggerImageOverride(overrideVideo, 2500)
         window.setTimeout(() => {
           engine.performAction(actionId)
 
@@ -154,7 +160,7 @@ export default function App() {
           } else if (actionId === 'monitoring') {
             setVitalsModalOpen(true)
           }
-        }, 6000)
+        }, 2500)
       } else {
         engine.performAction(actionId)
 
@@ -196,10 +202,21 @@ export default function App() {
   let baseImage = 'action-images/patient-without-monitor.png'
   if (engine.currentStateId === 'death') {
     baseImage = 'action-images/dead.png'
+  } else if (persistentLookActionId === 'oxygen' || persistentLookActionId === 'needle-decompression') {
+    // oxygen/needle-decompression's after-image must win even when the state's vitals read as
+    // "bad" (e.g. oxygen -> tension-pneumo, or mid-transition out of tension-pneumo after
+    // needle decompression) or "happy".
+    baseImage = 'action-images/after_taking_oxygen.png'
   } else if (isBad) {
     baseImage = 'action-images/fail.png'
+  } else if (persistentLookActionId === 'physical-exam' || persistentLookActionId === 'blood-panel') {
+    // physical-exam/blood-panel's fail.png look must win even when vitals otherwise read as "happy".
+    baseImage = 'action-images/fail.png'
+  } else if (persistentLookActionId === 'd-dimer') {
+    // d-dimer's after-image must win even when vitals otherwise read as "happy".
+    baseImage = 'action-images/D-Dimmer Test After.jpeg'
   } else if (isHappy) {
-    baseImage = 'action-images/patient-happy.png'
+    baseImage = 'action-images/fail.png'
   } else if (persistentLookImage) {
     baseImage = persistentLookImage
   } else if (monitorAttached) {
