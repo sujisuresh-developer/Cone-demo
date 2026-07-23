@@ -26,9 +26,9 @@ function ObservationQuestion({ actionId }: { actionId: string }) {
     }
   }
 
-  const selectedCorrectCount = selected.filter((i) => action.observationChoices[i].isCorrect).length
-  const hasWrongSelected = selected.some((i) => !action.observationChoices[i].isCorrect)
-  const totalCorrectChoices = action.observationChoices.filter((c) => c.isCorrect).length
+  const selectedCorrectCount = selected.filter((i) => action.observationChoices?.[i]?.isCorrect).length
+  const hasWrongSelected = selected.some((i) => !action.observationChoices?.[i]?.isCorrect)
+  const totalCorrectChoices = (action.observationChoices ?? []).filter((c) => c.isCorrect).length
   const isFullyCorrect = selectedCorrectCount === totalCorrectChoices && !hasWrongSelected
 
   return (
