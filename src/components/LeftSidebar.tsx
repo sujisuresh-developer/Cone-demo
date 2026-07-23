@@ -1,11 +1,11 @@
 import { Info, Search, Bed, Radio, Clock } from 'lucide-react'
-import { useState } from 'react'
-import { ACTIONS, PATIENT } from '../simulation/pneumothoraxCase'
+import { useState, useEffect } from 'react'
+import { ACTIONS, PATIENT, type ActionTab } from '../simulation/pneumothoraxCase'
 import PatientMedia, { VIDEO_EXTENSIONS } from './PatientMedia'
 
 
 /** Diagnostics actions that open a rich result panel (OutcomeModal) instead of just logging "Done". */
-export const OUTCOME_ACTION_IDS = new Set(['pocus', 'chest-xray', 'blood-panel', 'troponin'])
+export const OUTCOME_ACTION_IDS = new Set(['pocus', 'chest-xray', 'blood-panel', 'troponin', 'ecg', 'd-dimer', 'ct-chest', 'chest-tube'])
 
 function formatTimeLabel(seconds: number): string {
   if (seconds < 60) return `${seconds}s`
@@ -60,8 +60,27 @@ export default function LeftSidebar({
 }: LeftSidebarProps) {
   const [search, setSearch] = useState('')
 
-  const actions = ACTIONS.filter((a) => availableActionIds.has(a.id))
-  const filtered = actions.filter((a) => a.name.toLowerCase().includes(search.toLowerCase()))
+  const [selectedTab, setSelectedTab] = useState<ActionTab | null>(null)
+
+  // Build list of actions reachable from current state and matching search — actions already
+  // performed in an earlier state are one-time, so they're dropped here instead of lingering
+  // as a dead, unclickable entry (see handlePerform's performed.includes guard below).
+  const filtered = ACTIONS.filter(
+    (a) => availableActionIds.has(a.id) && !performed.includes(a.id) && a.name.toLowerCase().includes(search.toLowerCase())
+  );
+  // Determine unique tabs from filtered actions
+  const availableTabs = Array.from(new Set(filtered.map((a) => a.tab)));
+
+
+  // Initialize selectedTab on first render or when tabs change
+  useEffect(() => {
+    if (availableTabs.length && (selectedTab === null || !availableTabs.includes(selectedTab))) {
+      setSelectedTab(availableTabs[0] as ActionTab)
+    }
+  }, [availableTabs])
+
+  // Filter actions further by selected tab
+  const tabFiltered = filtered.filter((a) => a.tab === selectedTab)
 
   const handlePerform = (actionId: string) => {
     if (performed.includes(actionId)) return // already done
@@ -110,7 +129,7 @@ export default function LeftSidebar({
               onClick={onViewPatientDetails}
               className="mt-3 w-full rounded-xl bg-primary py-2 text-[12px] font-semibold text-white transition-all duration-300 hover:bg-primary-hover shadow-md"
             >
-              View More
+              View History
             </button>
           </div>
         </div>
@@ -123,8 +142,28 @@ export default function LeftSidebar({
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold text-primary">
             {currentStateName}
           </span>
-        </div>
-        <p className="mb-2 text-[9px] text-gray-400">Only what's clinically available right now is shown here.</p>
+          </div>
+                    {/* Tab navigation */}
+          {availableTabs.length > 0 && (
+            <div className="mt-2">
+              <div className="no-scrollbar flex space-x-2 overflow-x-auto whitespace-nowrap pb-2 -mx-2 px-2">
+                {availableTabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setSelectedTab(tab as ActionTab)}
+                    className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
+                      tab === selectedTab
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <p className="mb-2 text-[9px] text-gray-400">Only what's clinically available right now is shown here.</p>
 
         <div className="relative mb-2.5">
           <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
@@ -151,7 +190,7 @@ export default function LeftSidebar({
                 <Toggle on={monitorAttached} onChange={onMonitorChange} />
               </li>
 
-              {filtered.map((action) => (
+              {tabFiltered.map((action) => (
                 <li
                   key={action.id}
                   className="flex cursor-pointer items-center justify-between rounded-lg py-1.5 pr-1 transition-colors hover:bg-gray-50"

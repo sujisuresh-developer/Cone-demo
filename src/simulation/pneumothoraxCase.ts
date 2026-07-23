@@ -93,14 +93,15 @@ export const PATIENT = {
   bloodGroup: 'O+',
   codeStatus: 'Full Code',
   caseStatus: 'Full Code',
-  chiefComplaint: 'Sudden onset right-sided chest pain and shortness of breath',
+  chiefComplaint: 'Sudden onset left-sided chest pain and shortness of breath',
   historyOfPresentIllness:
-    '34M with sudden onset right-sided pleuritic chest pain and dyspnea while at rest, started about an hour ago, no preceding trauma. Denies fever, cough, or leg swelling.',
-  pastMedicalHistory: 'No significant past medical history.',
+    '34M with sudden onset left-sided pleuritic chest pain and dyspnea while at rest, started about an hour ago, no preceding trauma. Denies fever, cough, or leg swelling',
+  pastMedicalHistory: 'No significant past medical history',
+  pastSurgicalHistory: 'no prior surgeries(nill)',
   medications: 'None',
   drugAllergies: 'NKDA (no known drug allergies)',
-  familyHistory: 'No family history of lung or cardiac disease.',
-  lifestyle: 'Tall, thin build; smokes half a pack per day; works as a delivery driver.',
+  familyHistory: 'No family history of lung or cardiac disease',
+  lifestyle: 'Smokes half a pack per day; Tall, thin build; Works as a delivery driver',
 }
 
 export const CASE_CONFIG = {
@@ -386,7 +387,7 @@ export const ACTIONS_BY_ID: Record<string, CaseAction> = Object.fromEntries(ACTI
 // of inaction, not a choice) use the same negative range.
 export const EDGES: CaseEdge[] = [
   // Arrival -> Assessment: 10 actions
-  { id: 'e-history', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'history-taking', score: 30, transitionNote: 'Focused history obtained — the best first step.' },
+
   { id: 'e-physical-exam', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'physical-exam', score: 28, transitionNote: 'Exam reveals decreased breath sounds — strong early step.' },
   { id: 'e-iv-access-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'iv-access', score: 25, transitionNote: 'Good preparatory step regardless of final diagnosis.' },
   { id: 'e-monitoring-1', source: 'arrival', target: 'assessment', trigger: 'action', actionId: 'monitoring', score: 24, transitionNote: 'Continuous monitoring attached — good practice.' },

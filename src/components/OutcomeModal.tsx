@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Check, X } from 'lucide-react'
+import { Check, X, NotebookPen } from 'lucide-react'
 import { ACTIONS_BY_ID, PATIENT } from '../simulation/pneumothoraxCase'
+import { appendImpressionToNotepad, isImpressionInNotepad, getActionImpression } from '../utils/impressionNotes'
 
 type Props = {
   open: boolean
@@ -88,6 +89,115 @@ function ObservationQuestion({ actionId }: { actionId: string }) {
   )
 }
 
+type BloodPanelRow = { item: string; result: number; low: number; high: number }
+
+const BLOOD_PANEL_ROWS: BloodPanelRow[] = [
+  { item: 'White blood count (K/UL)', result: 12.2, low: 4, high: 11 },
+  { item: 'Red blood count (M/UL)', result: 3.76, low: 4.2, high: 6.0 },
+  { item: 'Hemoglobin (g/dL)', result: 11.9, low: 12.0, high: 16.0 },
+  { item: 'Hematocrit (%)', result: 35.7, low: 40, high: 52 },
+  { item: 'Platelets (K/UL)', result: 257, low: 150, high: 400 },
+  { item: 'Sodium (mmol/L)', result: 134.0, low: 135, high: 145 },
+  { item: 'Potassium (mmol/L)', result: 3.8, low: 3.5, high: 5.5 },
+  { item: 'Chloride (mmol/L)', result: 107.0, low: 98, high: 107 },
+  { item: 'Bicarbonate (mmol/L)', result: 22.0, low: 22, high: 28 },
+  { item: 'Blood urea nitrogen (mg/dL)', result: 6.0, low: 7, high: 17 },
+  { item: 'Creatinine (mg/dL)', result: 0.71, low: 0.52, high: 1.04 },
+  { item: 'Glucose (mg/dL)', result: 122.0, low: 60, high: 110 },
+  { item: 'Calcium (mg/dL)', result: 8.9, low: 8.4, high: 10.6 },
+  { item: 'Alkaline phosphatase (U/L)', result: 137.0, low: 38, high: 126 },
+  { item: 'Alanine transaminase (U/L)', result: 14.0, low: 9, high: 52 },
+  { item: 'Aspartate transaminase (U/L)', result: 30.0, low: 15, high: 46 },
+  { item: 'Total protein (g/dL)', result: 7.1, low: 6.3, high: 8.2 },
+  { item: 'Albumin (g/dL)', result: 3.4, low: 3.5, high: 5.0 },
+  { item: 'Total bilirubin (mg/dL)', result: 0.5, low: 0.2, high: 1.3 },
+]
+
+function BloodPanelTable() {
+  return (
+    <table className="w-full text-[11px]">
+      <thead>
+        <tr className="border-b border-gray-200">
+          <th className="text-left font-bold text-gray-700 py-1.5 px-2">Item</th>
+          <th className="text-center font-bold text-gray-700 py-1.5 px-2">Result</th>
+          <th className="text-center font-bold text-gray-700 py-1.5 px-2">Normal range</th>
+        </tr>
+      </thead>
+      <tbody>
+        {BLOOD_PANEL_ROWS.map((row) => {
+          const isHigh = row.result > row.high
+          const isLow = row.result < row.low
+          const isAbnormal = isHigh || isLow
+          return (
+            <tr key={row.item} className={`border-b border-gray-100 last:border-0 ${isAbnormal ? 'bg-red-50' : ''}`}>
+              <td className="py-1.5 px-2 text-gray-700">{row.item}</td>
+              <td
+                className={`py-1.5 px-2 text-center font-bold ${
+                  isAbnormal ? 'text-red-600' : 'text-gray-800'
+                }`}
+              >
+                {row.result}
+                {isHigh && <span className="ml-1">&uarr;</span>}
+                {isLow && <span className="ml-1">&darr;</span>}
+              </td>
+              <td className="py-1.5 px-2 text-center text-gray-500">
+                {row.low}&ndash;{row.high}
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+function ImpressionCard({ actionId }: { actionId: string }) {
+  const [saved, setSaved] = useState(false)
+  const isSavedAlready = isImpressionInNotepad(actionId)
+  const impressionText = getActionImpression(actionId)
+
+  const handleSave = () => {
+    appendImpressionToNotepad(actionId)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  return (
+    <div className="border border-blue-100 rounded-xl p-3.5 bg-blue-50/40 space-y-2">
+      <div className="flex items-center justify-between">
+        <h4 className="text-[12px] font-bold text-gray-800 flex items-center gap-1.5">
+          <NotebookPen size={14} className="text-blue-600" />
+          <span>Professional Impression</span>
+        </h4>
+        <button
+          type="button"
+          onClick={handleSave}
+          className={`px-3 py-1 rounded-lg text-[10.5px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            saved || isSavedAlready
+              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+              : 'bg-primary hover:bg-primary-hover text-white shadow-xs'
+          }`}
+        >
+          {saved || isSavedAlready ? (
+            <>
+              <Check size={12} />
+              <span>In Notepad</span>
+            </>
+          ) : (
+            <>
+              <NotebookPen size={12} />
+              <span>Save to Notepad</span>
+            </>
+          )}
+        </button>
+      </div>
+      <p className="text-[11px] leading-relaxed text-gray-700 font-medium">
+        {impressionText}
+      </p>
+    </div>
+  )
+}
+
 export default function OutcomeModal({ open, onClose, actionId }: Props) {
   const [isVisible, setIsVisible] = useState(false)
 
@@ -116,8 +226,9 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
 
   if (!open || !actionId) return null
 
+  const currentAction = ACTIONS_BY_ID[actionId]
   // Determine modal header details
-  let title = 'Diagnostic Result'
+  let title = currentAction ? currentAction.name : 'Diagnostic Result'
 
   if (actionId === 'pocus') {
     title = 'POCUS (Lung Ultrasound)'
@@ -212,12 +323,7 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
                 )}
               </div>
 
-              <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
-                <h4 className="text-[11.5px] font-bold text-gray-800">Professional Suggestion</h4>
-                <p className="text-[11px] leading-relaxed text-gray-600">
-                  Recommend immediate clinical correlation and appropriate management.
-                </p>
-              </div>
+              <ImpressionCard actionId={actionId} />
 
               <ObservationQuestion actionId={actionId} />
             </div>
@@ -230,22 +336,51 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
                 <img src="/xray-pneumothorax.png.png" alt="Right Pneumothorax Chest X-Ray" className="w-full h-auto" />
               </div>
 
-              <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
-                <span className="text-[11.5px] font-bold text-gray-800 block">Professional Suggestion</span>
-                <p className="text-[11px] leading-relaxed text-gray-600">
-                  Low-yield PE-differential test for this classic presentation.
-                </p>
-              </div>
+              <ImpressionCard actionId={actionId} />
 
               <ObservationQuestion actionId={actionId} />
+            </div>
+          )}
+
+          {/* 12-Lead ECG */}
+          {actionId === 'ecg' && (
+            <div className="space-y-3">
+              <div className="relative border border-gray-200 bg-black rounded-xl overflow-hidden flex items-center justify-center">
+                <img src="/ecg-sinus-tach.png.png" alt="Sinus Tachycardia ECG" className="w-full h-auto" />
+              </div>
+
+              <ImpressionCard actionId={actionId} />
+
+              <ObservationQuestion actionId={actionId} />
+            </div>
+          )}
+
+          {/* D-Dimer Test */}
+          {actionId === 'd-dimer' && (
+            <div className="relative border border-gray-200 bg-black rounded-xl overflow-hidden flex items-center justify-center">
+              <img src="/action-images/D_timer_image.jpeg" alt="D-Dimer Test Result" className="w-full h-auto" />
+            </div>
+          )}
+
+          {/* Chest Tube */}
+          {actionId === 'chest-tube' && (
+            <div className="relative border border-gray-200 bg-black rounded-xl overflow-hidden flex items-center justify-center">
+              <img src="/action-images/chest_tube_image.jpeg" alt="Chest Tube Result" className="w-full h-auto" />
+            </div>
+          )}
+
+          {/* CT Chest */}
+          {actionId === 'ct-chest' && (
+            <div className="relative border border-gray-200 bg-black rounded-xl overflow-hidden flex items-center justify-center">
+              <img src="/action-images/CT-Scan Report.jpeg" alt="CT Chest Report" className="w-full h-auto" />
             </div>
           )}
 
           {/* Basic Blood Panel */}
           {actionId === 'blood-panel' && (
             <div className="space-y-3">
-              <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[340px] overflow-y-auto">
-                <img src="/action-images/basic-blood-test-result.webp" alt="Basic Blood Panel Result" className="w-full h-auto block" />
+              <div className="border border-gray-200 rounded-xl overflow-hidden max-h-[340px] overflow-y-auto action-scroll">
+                <BloodPanelTable />
               </div>
 
               <div className="border border-purple-100 rounded-xl p-2.5 bg-purple-50/40">
@@ -255,12 +390,7 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
                 </span>
               </div>
 
-              <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
-                <span className="text-[11.5px] font-bold text-gray-800 block">Professional Suggestion</span>
-                <p className="text-[11px] leading-relaxed text-gray-600">
-                  A normal blood count and chemistry panel neither confirms nor excludes a pneumothorax — imaging or bedside ultrasound is required to make the diagnosis.
-                </p>
-              </div>
+              <ImpressionCard actionId={actionId} />
 
               <ObservationQuestion actionId={actionId} />
             </div>
@@ -280,13 +410,16 @@ export default function OutcomeModal({ open, onClose, actionId }: Props) {
                 </span>
               </div>
 
-              <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-1">
-                <span className="text-[11.5px] font-bold text-gray-800 block">Professional Suggestion</span>
-                <p className="text-[11px] leading-relaxed text-gray-600">
-                  A normal troponin helps exclude an acute cardiac event but says nothing about the chest — it isn't diagnostic for pneumothorax and shouldn't delay confirmatory imaging.
-                </p>
-              </div>
+              <ImpressionCard actionId={actionId} />
 
+              <ObservationQuestion actionId={actionId} />
+            </div>
+          )}
+
+          {/* Fallback for any other action */}
+          {actionId !== 'pocus' && actionId !== 'chest-xray' && actionId !== 'blood-panel' && actionId !== 'troponin' && (
+            <div className="space-y-3">
+              <ImpressionCard actionId={actionId} />
               <ObservationQuestion actionId={actionId} />
             </div>
           )}
