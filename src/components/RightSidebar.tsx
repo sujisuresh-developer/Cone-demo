@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 import {
   Clock,
   Undo2,
@@ -255,10 +255,24 @@ export default function RightSidebar({
   onVitalsModalOpenChange,
 }: RightSidebarProps) {
 
+  // Baseline reveal: the moment the monitor is attached, show 0s for 2s before
+  // jumping to the patient's actual starting vitals — mimics a monitor booting up.
+  const [showBaseline, setShowBaseline] = useState(false)
+
+  useEffect(() => {
+    if (!monitorAttached) {
+      setShowBaseline(false)
+      return
+    }
+    setShowBaseline(false)
+    const t = setTimeout(() => setShowBaseline(true), 2000)
+    return () => clearTimeout(t)
+  }, [monitorAttached])
+
   const dynamicVitals = [
     {
       label: 'Heart Rate',
-      value: String(vitals.hr),
+      value: showBaseline ? String(vitals.hr) : '0',
       unit: 'bpm',
       status: vitals.hr >= 120 ? 'Severe Tachycardia' : vitals.hr > 100 ? 'Tachycardia' : 'Within Range',
       border: vitals.hr >= 120 ? 'border-red-400' : vitals.hr > 100 ? 'border-yellow-400' : 'border-green-400',
@@ -268,7 +282,7 @@ export default function RightSidebar({
     },
     {
       label: 'Blood Pressure',
-      value: vitals.bp,
+      value: showBaseline ? vitals.bp : '0/0',
       unit: 'mmHg',
       status: vitals.bp === '70/40' || vitals.bp === '65/35' ? 'Severe Hypotension' : vitals.bp === '92/58' || vitals.bp === '86/54' ? 'Hypotensive' : vitals.bp === '110/70' ? 'Normal (Stabilized)' : 'Hypertensive',
       border: vitals.bp.startsWith('70') || vitals.bp.startsWith('65') || vitals.bp.startsWith('92') || vitals.bp.startsWith('86') ? 'border-red-400' : vitals.bp === '110/70' ? 'border-green-400' : 'border-yellow-400',
@@ -279,7 +293,7 @@ export default function RightSidebar({
     },
     {
       label: 'SpO2',
-      value: String(vitals.spo2),
+      value: showBaseline ? String(vitals.spo2) : '0',
       unit: '%',
       status: vitals.spo2 >= 95 ? 'Normal Saturation' : vitals.spo2 >= 90 ? 'Low Saturation' : 'Severe Hypoxia',
       border: vitals.spo2 >= 95 ? 'border-green-400' : vitals.spo2 >= 90 ? 'border-orange-400' : 'border-red-400',
@@ -289,7 +303,7 @@ export default function RightSidebar({
     },
     {
       label: 'Resp Rate',
-      value: String(vitals.rr),
+      value: showBaseline ? String(vitals.rr) : '0',
       unit: '/min',
       status: vitals.rr >= 30 ? 'Severe Tachypnea' : vitals.rr > 20 ? 'Tachypneic' : 'Within Range',
       border: vitals.rr >= 30 ? 'border-red-400' : vitals.rr > 20 ? 'border-orange-400' : 'border-green-400',
