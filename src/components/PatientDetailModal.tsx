@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import {
   X,
-  User,
   Heart,
   AlertTriangle,
   ClipboardList,
-  Pill,
   FileText,
   Calendar,
   ShieldAlert,
+  Activity,
+  Users,
 } from 'lucide-react'
 import { PATIENT } from '../simulation/pneumothoraxCase'
 
@@ -48,7 +48,7 @@ export default function PatientDetailModal({ open, onClose }: Props) {
       <div
         className={`reports-modal-content ${
           isVisible ? 'reports-modal-content-visible' : ''
-        } !w-[680px] !max-w-[95vw] !max-h-[85vh] !p-0 flex flex-col md:flex-row overflow-hidden`}
+        } !w-[680px] !max-w-[95vw] !max-h-[85vh] !p-0 flex flex-col md:flex-row overflow-hidden patient-modal-outline-effect`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Left Panel: Profile summary */}
@@ -150,20 +150,20 @@ export default function PatientDetailModal({ open, onClose }: Props) {
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
                 <FileText size={14} className="text-blue-500" />
-                <span>Chief Complaint & History (HPI)</span>
+                <span>Chief Complaint & History of Present Illness (HPI)</span>
               </div>
               <div className="bg-blue-50/30 border border-blue-100/50 rounded-xl p-3.5 space-y-2">
                 <p className="text-[11.5px] leading-relaxed text-gray-700">
-                  <strong className="text-blue-700 font-bold">Chief Complaint:</strong> Acute, sudden onset of progressive breathing difficulty and sharp right-sided chest pain starting approximately 1 hour ago.
+                  <strong className="text-blue-700 font-bold">Chief Complaint:</strong> Sudden onset left-sided chest pain and shortness of breath
                 </p>
-                <p className="text-[11.5px] leading-relaxed text-gray-500">
-                  The patient was at home when he experienced a sudden, sharp, stabbing pain in his right chest, followed immediately by severe shortness of breath. He reports feeling increasingly dizzy, sweaty, and anxious. He denies any recent trauma or fall.
+                <p className="text-[11.5px] leading-relaxed text-gray-600">
+                  <strong className="text-blue-700 font-bold">History of Present Illness:</strong> 34M with sudden onset left-sided pleuritic chest pain and dyspnea while at rest, started about an hour ago, no preceding trauma. Denies fever, cough, or leg swelling.
                 </p>
               </div>
             </div>
 
             {/* 2. Physical Examination */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
                 <User size={14} className="text-purple-500" />
                 <span>Physical Examination (At Admission)</span>
@@ -172,11 +172,11 @@ export default function PatientDetailModal({ open, onClose }: Props) {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <strong className="text-gray-700 block font-semibold">General Status:</strong>
-                    Distressed, tachypneic, diaphoretic, using accessory muscles to breathe.
+                    Distressed, tachypneic, diaphoretic, using accessory muscles to breathe. Tall, thin build.
                   </div>
                   <div>
                     <strong className="text-gray-700 block font-semibold">Respiratory System:</strong>
-                    Severely diminished breath sounds on the right lung fields. Hyperresonance to percussion on the right side.
+                    Severely diminished breath sounds on the left lung fields. Hyperresonance to percussion on the left side.
                   </div>
                   <div>
                     <strong className="text-gray-700 block font-semibold">Cardiovascular:</strong>
@@ -188,56 +188,68 @@ export default function PatientDetailModal({ open, onClose }: Props) {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
-            {/* 3. Allergies & Medications */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
-                <Pill size={14} className="text-emerald-500" />
-                <span>Allergies & Home Medications</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Allergies */}
-                <div className="border border-red-100 bg-red-50/30 rounded-xl p-3 flex items-start gap-2.5">
-                  <AlertTriangle size={16} className="text-red-500 shrink-0 mt-0.5" />
-                  <div className="text-[11.5px]">
-                    <span className="font-bold text-red-800 block">Drug Allergies</span>
-                    <span className="text-red-700 font-semibold">Penicillin</span>
-                    <span className="text-red-500 block text-[10px] mt-0.5">Reaction: Severe Urticaria (Hives)</span>
-                  </div>
-                </div>
-                {/* Home Meds */}
-                <div className="border border-emerald-100 bg-emerald-50/30 rounded-xl p-3 flex items-start gap-2.5">
-                  <Pill size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="text-[11.5px]">
-                    <span className="font-bold text-emerald-800 block">Home Medications</span>
-                    <ul className="list-disc list-inside space-y-0.5 text-emerald-700 mt-1">
-                      <li>Lisinopril 10mg daily</li>
-                      <li>Albuterol HFA inhaler PRN</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 4. Past Medical History */}
+            {/* 3. Past Medical & Surgical History */}
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
                 <FileText size={14} className="text-amber-600" />
-                <span>Past Medical History (PMH)</span>
+                <span>Medical & Surgical History</span>
               </div>
-              <div className="bg-amber-50/30 border border-amber-100/50 rounded-xl p-3.5 text-[11.5px] text-gray-600 space-y-1.5">
+              <div className="bg-amber-50/30 border border-amber-100/50 rounded-xl p-3.5 space-y-2 text-[11.5px]">
                 <div className="flex items-start gap-2">
                   <span className="text-amber-600 font-bold">•</span>
-                  <span><strong>Hypertension:</strong> Diagnosed 4 years ago, well controlled on home Lisinopril therapy.</span>
+                  <span><strong className="text-gray-800">Past Medical History:</strong> No significant past medical history</span>
                 </div>
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2 pt-1.5 border-t border-amber-100/60">
                   <span className="text-amber-600 font-bold">•</span>
-                  <span><strong>Asthma:</strong> Diagnosed in childhood. Frequent albuterol rescue use in the past, last severe exacerbation requiring ED admission was 2 years ago.</span>
+                  <span><strong className="text-gray-800">Past Surgical History:</strong> No prior surgeries (nill)</span>
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-amber-600 font-bold">•</span>
-                  <span><strong>Tobacco Use:</strong> Former smoker (15 pack-years history), successfully quit smoking 5 years ago.</span>
+              </div>
+            </div>
+
+            {/* 4. Family History */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
+                <Users size={14} className="text-indigo-500" />
+                <span>Family History</span>
+              </div>
+              <div className="bg-indigo-50/30 border border-indigo-100/50 rounded-xl p-3.5 text-[11.5px] text-gray-700 flex items-start gap-2">
+                <span className="text-indigo-500 font-bold">•</span>
+                <span>No family history of lung or cardiac disease</span>
+              </div>
+            </div>
+
+            {/* 5. Drug Allergies */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
+                <AlertTriangle size={14} className="text-emerald-600" />
+                <span>Drug Allergies</span>
+              </div>
+              <div className="border border-emerald-100 bg-emerald-50/30 rounded-xl p-3.5 text-[11.5px] flex items-center gap-2">
+                <span className="font-bold text-emerald-800">NKDA</span>
+                <span className="text-emerald-700">(no known drug allergies)</span>
+              </div>
+            </div>
+
+            {/* 6. Lifestyle & Social History */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
+                <Activity size={14} className="text-rose-500" />
+                <span>Lifestyle & Social History</span>
+              </div>
+              <div className="bg-rose-50/30 border border-rose-100/50 rounded-xl p-3.5 space-y-1.5 text-[11.5px] text-gray-700">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                  <span>Smokes half a pack per day</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                  <span>Tall, thin build</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                  <span>Works as a delivery driver</span>
                 </div>
               </div>
             </div>

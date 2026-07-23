@@ -93,14 +93,15 @@ export const PATIENT = {
   bloodGroup: 'O+',
   codeStatus: 'Full Code',
   caseStatus: 'Full Code',
-  chiefComplaint: 'Sudden onset right-sided chest pain and shortness of breath',
+  chiefComplaint: 'Sudden onset left-sided chest pain and shortness of breath',
   historyOfPresentIllness:
-    '34M with sudden onset right-sided pleuritic chest pain and dyspnea while at rest, started about an hour ago, no preceding trauma. Denies fever, cough, or leg swelling.',
-  pastMedicalHistory: 'No significant past medical history.',
+    '34M with sudden onset left-sided pleuritic chest pain and dyspnea while at rest, started about an hour ago, no preceding trauma. Denies fever, cough, or leg swelling',
+  pastMedicalHistory: 'No significant past medical history',
+  pastSurgicalHistory: 'no prior surgeries(nill)',
   medications: 'None',
   drugAllergies: 'NKDA (no known drug allergies)',
-  familyHistory: 'No family history of lung or cardiac disease.',
-  lifestyle: 'Tall, thin build; smokes half a pack per day; works as a delivery driver.',
+  familyHistory: 'No family history of lung or cardiac disease',
+  lifestyle: 'Smokes half a pack per day; Tall, thin build; Works as a delivery driver',
 }
 
 export const CASE_CONFIG = {

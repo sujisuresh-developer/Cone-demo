@@ -8,6 +8,7 @@ import CaseSummaryModal from './components/CaseSummaryModal'
 import { OUTCOME_ACTION_IDS } from './components/LeftSidebar'
 import { useCaseEngine } from './simulation/useCaseEngine'
 import { CLINICAL_HINTS, type Vitals } from './simulation/pneumothoraxCase'
+import { appendImpressionToNotepad } from './utils/impressionNotes'
 
 // Kept only because VitalsDetailModal/RightSidebar still type against it — the demo runs a single
 // hardcoded case, so this is always 'pneumothorax'.
@@ -134,6 +135,9 @@ export default function App() {
   const handlePerformAction = useCallback(
     (actionId: string) => {
       if (patientOverrideImage !== null) return // Ignore clicks while video is playing
+
+      // Automatically record professional impression note in notepad
+      appendImpressionToNotepad(actionId)
 
       const overrideVideo = VIDEO_OVERRIDE_BY_ACTION[actionId]
       const hasOverride = !!overrideVideo

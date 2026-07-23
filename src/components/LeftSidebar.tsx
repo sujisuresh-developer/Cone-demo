@@ -110,7 +110,7 @@ export default function LeftSidebar({
               onClick={onViewPatientDetails}
               className="mt-3 w-full rounded-xl bg-primary py-2 text-[12px] font-semibold text-white transition-all duration-300 hover:bg-primary-hover shadow-md"
             >
-              View More
+              View History
             </button>
           </div>
         </div>
