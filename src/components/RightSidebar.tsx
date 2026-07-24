@@ -3,6 +3,8 @@ import {
   Clock,
   Undo2,
   Info,
+  AlertTriangle,
+  X,
 } from 'lucide-react'
 import VitalsDetailModal, {
   getEcgValue,
@@ -231,6 +233,85 @@ function LiveVitalCard({
   )
 }
 
+function HandoffConfirmModal({
+  open,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => setIsVisible(true))
+    } else {
+      setIsVisible(false)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [open, onCancel])
+
+  if (!open) return null
+
+  return (
+    <div
+      className={`reports-modal-overlay ${isVisible ? 'reports-modal-visible' : ''}`}
+      style={{ zIndex: 10000 }}
+      onClick={onCancel}
+    >
+      <div
+        className={`reports-modal-content ${
+          isVisible ? 'reports-modal-content-visible' : ''
+        } !w-[380px] !max-w-[92vw] !p-6 flex flex-col items-center text-center`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="reports-close-btn" onClick={onCancel} type="button">
+          <X size={16} />
+        </button>
+
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 border border-amber-200">
+          <AlertTriangle className="h-6 w-6 text-amber-500" strokeWidth={2} />
+        </div>
+
+        <h2 className="mt-3.5 text-[16px] font-bold text-gray-900">Confirm Hand-off?</h2>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-gray-500">
+          This ends your active management of the case and passes the patient to the next
+          clinician. You won't be able to perform further actions afterward — make sure your
+          workup is complete.
+        </p>
+
+        <div className="mt-5 flex w-full gap-2.5">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-xl border border-gray-200 bg-white py-2.5 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-gray-50 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-primary-hover cursor-pointer"
+          >
+            <Undo2 className="h-3.5 w-3.5" strokeWidth={2} />
+            Confirm Hand-off
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 type RightSidebarProps = {
   monitorAttached?: boolean
   secondsLeft: number
@@ -254,6 +335,9 @@ export default function RightSidebar({
   vitalsModalOpen,
   onVitalsModalOpenChange,
 }: RightSidebarProps) {
+
+  const [handoffInfoOpen, setHandoffInfoOpen] = useState(false)
+  const [handoffConfirmOpen, setHandoffConfirmOpen] = useState(false)
 
   // Baseline reveal: the moment the monitor is attached, show 0s for 2s before
   // jumping to the patient's actual starting vitals — mimics a monitor booting up.
@@ -394,12 +478,34 @@ export default function RightSidebar({
       <div className="card-shadow shrink-0 rounded-3xl bg-white p-5">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[15px] font-semibold text-gray-800">Hand-Off</h2>
-          <Info className="h-4 w-4 text-gray-400" />
+          <div
+            className="relative"
+            onMouseEnter={() => setHandoffInfoOpen(true)}
+            onMouseLeave={() => setHandoffInfoOpen(false)}
+          >
+            <button
+              type="button"
+              onClick={() => setHandoffInfoOpen((v) => !v)}
+              className="rounded-full p-1 transition-colors hover:bg-gray-100 cursor-pointer"
+            >
+              <Info className="h-4 w-4 text-gray-400" />
+            </button>
+            <div
+              role="tooltip"
+              className={`pointer-events-none absolute right-0 top-full z-10 mt-1.5 w-52 rounded-lg bg-gray-900 px-2.5 py-2 text-[10.5px] font-medium leading-snug text-white shadow-lg transition-all duration-150 ${
+                handoffInfoOpen ? 'opacity-100 translate-y-0' : 'invisible opacity-0 -translate-y-1'
+              }`}
+            >
+              Ends your active management of the case and passes the patient to the next
+              clinician, closing out the simulation.
+              <div className="absolute bottom-full right-3 h-2 w-2 translate-y-1/2 rotate-45 bg-gray-900" />
+            </div>
+          </div>
         </div>
         <button
           type="button"
-          onClick={onHandOff}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-primary-hover"
+          onClick={() => setHandoffConfirmOpen(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-primary-hover cursor-pointer"
         >
           <Undo2 className="h-4 w-4" strokeWidth={2} />
           Hand-off
@@ -412,6 +518,17 @@ export default function RightSidebar({
         onClose={() => onVitalsModalOpenChange(false)}
         vitals={vitals}
         scenario={scenario}
+        monitorAttached={monitorAttached}
+      />
+
+      {/* Hand-off confirmation */}
+      <HandoffConfirmModal
+        open={handoffConfirmOpen}
+        onCancel={() => setHandoffConfirmOpen(false)}
+        onConfirm={() => {
+          setHandoffConfirmOpen(false)
+          onHandOff()
+        }}
       />
     </aside>
   )

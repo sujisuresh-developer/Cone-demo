@@ -99,7 +99,7 @@ const WAVEFORMS: WaveformConfig[] = [
 
 /* ─── Component Props ─── */
 
-type Props = { open: boolean; onClose: () => void; vitals: Vitals; scenario: ScenarioMode }
+type Props = { open: boolean; onClose: () => void; vitals: Vitals; scenario: ScenarioMode; monitorAttached?: boolean }
 
 /* ─── Clock Hook ─── */
 
@@ -129,7 +129,7 @@ function fmtTime(d: Date) {
 
 /* ─── Main Component ─── */
 
-export default function VitalsDetailModal({ open, onClose, vitals, scenario }: Props) {
+export default function VitalsDetailModal({ open, onClose, vitals, scenario, monitorAttached }: Props) {
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([null, null, null, null])
   const animRef = useRef<number>(0)
   const [isVisible, setIsVisible] = useState(false)
@@ -156,8 +156,33 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
     }
   }, [open])
 
+  // With no monitor attached there's no live signal to trace, so draw a flat baseline once
+  // (matching the sidebar's own placeholder cards) instead of animating fabricated waveforms.
   useEffect(() => {
-    if (!open) return
+    if (!open || monitorAttached) return
+    canvasRefs.current.forEach((canvas) => {
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      const dpr = window.devicePixelRatio || 1
+      const w = Math.floor(canvas.clientWidth)
+      const h = Math.floor(canvas.clientHeight)
+      if (!w || !h) return
+      canvas.width = Math.round(w * dpr)
+      canvas.height = Math.round(h * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.clearRect(0, 0, w, h)
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)'
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.moveTo(0, h / 2)
+      ctx.lineTo(w, h / 2)
+      ctx.stroke()
+    })
+  }, [open, monitorAttached])
+
+  useEffect(() => {
+    if (!open || !monitorAttached) return
     const SWEEP = 6.0 // Sweep duration in seconds
 
     const animate = () => {
@@ -295,7 +320,7 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
 
     animRef.current = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(animRef.current)
-  }, [open, vitals, scenario])
+  }, [open, monitorAttached, vitals, scenario])
 
   useEffect(() => {
     if (!open) return
@@ -327,7 +352,7 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
         <div className="icu-body">
 
           {/* Left Panel: Waveforms */}
-          <div className="icu-waves">
+          <div className="icu-waves relative">
             {WAVEFORMS.map((wf, i) => (
               <div key={wf.label} className="icu-wave-row">
                 <div className="icu-wave-meta">
@@ -364,7 +389,7 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
                 </span>
               </div>
               <div className="icu-nval-row">
-                <span className="icu-nval">{vitals.hr}</span>
+                <span className="icu-nval">{monitorAttached ? vitals.hr : '--'}</span>
                 <span className="icu-nunit">bpm</span>
               </div>
             </div>
@@ -376,7 +401,7 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
                 <span className="icu-nunit-top">%</span>
               </div>
               <div className="icu-nval-row">
-                <span className="icu-nval">{vitals.spo2}</span>
+                <span className="icu-nval">{monitorAttached ? vitals.spo2 : '--'}</span>
                 <div className="icu-nlimits">
                   <span>96</span>
                   <span className="icu-nlim-sep">100</span>
@@ -392,8 +417,8 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
                 <span className="icu-nunit-top">mmHg</span>
               </div>
               <div className="icu-nbp-row">
-                <span className="icu-nbp">{vitals.bp}</span>
-                <span className="icu-nmap">({bpMap})</span>
+                <span className="icu-nbp">{monitorAttached ? vitals.bp : '--/--'}</span>
+                <span className="icu-nmap">{monitorAttached ? `(${bpMap})` : ''}</span>
               </div>
               <div className="icu-nbp-meta">
                 <span>MANUAL</span>
@@ -408,7 +433,7 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
                 <span className="icu-nunit-top">rpm</span>
               </div>
               <div className="icu-nval-row">
-                <span className="icu-nval">{vitals.rr}</span>
+                <span className="icu-nval">{monitorAttached ? vitals.rr : '--'}</span>
                 <div className="icu-nlimits">
                   <span>30</span>
                   <span className="icu-nlim-sep">8</span>
@@ -423,7 +448,7 @@ export default function VitalsDetailModal({ open, onClose, vitals, scenario }: P
                 <span className="icu-nunit-top">°C</span>
               </div>
               <div className="icu-nval-row">
-                <span className="icu-nval">{vitals.temp.toFixed(1)}</span>
+                <span className="icu-nval">{monitorAttached ? vitals.temp.toFixed(1) : '--'}</span>
                 <div className="icu-nlimits">
                   <span>38.0</span>
                   <span className="icu-nlim-sep">35.0</span>
