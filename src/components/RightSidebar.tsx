@@ -518,6 +518,7 @@ export default function RightSidebar({
         onClose={() => onVitalsModalOpenChange(false)}
         vitals={vitals}
         scenario={scenario}
+        monitorAttached={monitorAttached}
       />
 
       {/* Hand-off confirmation */}
