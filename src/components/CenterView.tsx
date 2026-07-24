@@ -102,10 +102,13 @@ export default function CenterView({
             }`}
         />
 
-        {/* Clickable hotspot over the bedside monitor device in the scene — only present once the
-         * monitor is actually attached (patient-with-monitor.png shows it). Hovering it zooms the
-         * scene in on the monitor; clicking opens the same Live Vitals popup as the "i" button. */}
-        {monitorAttached && !chatExpanded && (
+        {/* Clickable hotspot over the bedside monitor device in the scene — only present when the
+         * currently displayed photo is actually the plain monitor-attached shot
+         * (action-images/patient-with-monitor.png). Any other override photo (procedure/med
+         * after-images, bad-vitals/happy looks, death, arrival) doesn't depict that monitor at
+         * this same spot, so the hotspot must not show over those. Hovering zooms the scene in on
+         * the monitor; clicking opens the same Live Vitals popup as the "i" button. */}
+        {monitorAttached && currentImg === 'action-images/patient-with-monitor.png' && !chatExpanded && (
           <button
             type="button"
             onClick={onOpenVitals}
