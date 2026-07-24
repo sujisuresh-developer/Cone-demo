@@ -43,7 +43,7 @@ export type CaseState = {
   outcome?: 'good' | 'bad'
 }
 
-export type ActionTab = 'diagnostics' | 'medications' | 'procedures'
+export type ActionTab = 'diagnostics' | 'medications' | 'procedures' | 'laboratory' | 'imaging'
 
 export type ObservationChoice = {
   text: string
@@ -61,6 +61,11 @@ export type CaseAction = {
   /** Shown under the result in OutcomeModal, when present — a quick check on interpreting the finding. */
   observationQuestion?: string
   observationChoices?: ObservationChoice[]
+  /** Milliseconds to wait after the action resolves before its result modal is shown (investigation
+   * report, exam finding, procedure outcome, medication feedback, imaging result, etc). The action
+   * itself and its state/score effects still apply immediately — only the modal display is deferred.
+   * Omit (or 0) to preserve the original show-immediately behavior. */
+  resultDelay?: number
 }
 
 export type TriggerType = 'action' | 'timer'
@@ -226,7 +231,7 @@ export const ACTIONS: CaseAction[] = [
   {
     id: 'blood-panel',
     name: 'Basic Blood Panel',
-    tab: 'diagnostics',
+    tab: 'laboratory',
     timeCost: 300,
     resultText:
       'Routine bloods unremarkable (WBC 8.2, Hgb 14.5, Na 139, K 4.1) — not diagnostic for pneumothorax; delays care.',
@@ -254,7 +259,7 @@ export const ACTIONS: CaseAction[] = [
   {
     id: 'chest-xray',
     name: 'Chest X-Ray',
-    tab: 'diagnostics',
+    tab: 'imaging',
     timeCost: 300,
     resultText:
       'Visceral pleural line with absent lung markings peripherally — confirms pneumothorax, slower than POCUS.',
@@ -298,7 +303,7 @@ export const ACTIONS: CaseAction[] = [
   {
     id: 'ecg',
     name: '12-Lead ECG',
-    tab: 'diagnostics',
+    tab: 'imaging',
     timeCost: 120,
     resultText: 'Sinus tachycardia, no ST changes — helps exclude an acute cardiac event.',
     observationQuestion: 'What does the ECG show?',
@@ -324,7 +329,7 @@ export const ACTIONS: CaseAction[] = [
   {
     id: 'troponin',
     name: 'Troponin Test',
-    tab: 'diagnostics',
+    tab: 'laboratory',
     timeCost: 900,
     resultText: 'Troponin negative — argues against acute coronary syndrome.',
     observationQuestion: 'Is troponin useful here?',
@@ -336,7 +341,7 @@ export const ACTIONS: CaseAction[] = [
   {
     id: 'd-dimer',
     name: 'D-Dimer Test',
-    tab: 'diagnostics',
+    tab: 'laboratory',
     timeCost: 600,
     resultText: 'D-Dimer mildly elevated — nonspecific, does not rule pneumothorax in or out.',
     observationQuestion: 'What does an elevated D-Dimer tell you here?',
@@ -348,7 +353,7 @@ export const ACTIONS: CaseAction[] = [
   {
     id: 'abg',
     name: 'Arterial Blood Gas',
-    tab: 'diagnostics',
+    tab: 'laboratory',
     timeCost: 300,
     resultText: 'Mild hypoxemia and respiratory alkalosis — consistent with, but not specific for, pneumothorax.',
     observationQuestion: 'What does the ABG add over pulse oximetry alone?',
@@ -360,7 +365,7 @@ export const ACTIONS: CaseAction[] = [
   {
     id: 'ct-chest',
     name: 'CT Chest',
-    tab: 'diagnostics',
+    tab: 'imaging',
     timeCost: 1200,
     resultText:
       'CT confirms a moderate right-sided pneumothorax — highly accurate, but far slower to obtain than POCUS or plain film.',

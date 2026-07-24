@@ -61,6 +61,74 @@ body {
   }
 }
 
+/* iOS-style "glassy" transition for switching between action category tabs (Diagnostics,
+ * Medications, Imaging, ...) — content blurs/defocuses out and refocuses in with a soft scale,
+ * echoing the frosted blur-transition iOS uses when switching Control Center panels. */
+.action-glass-transition {
+  animation: actionGlassIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: filter, transform, opacity;
+}
+
+@keyframes actionGlassIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+    filter: blur(10px) saturate(1.4);
+  }
+  55% {
+    filter: blur(2px) saturate(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0) saturate(1);
+  }
+}
+
+/* A brief translucent sheen that sweeps across the panel the instant a tab switches, like light
+ * catching frosted glass as it settles into place. */
+.action-glass-transition::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  border-radius: 12px;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 66%);
+  background-size: 220% 100%;
+  background-position: 120% 0;
+  animation: actionGlassSheen 0.55s ease-out both;
+}
+
+@keyframes actionGlassSheen {
+  0% { background-position: 130% 0; opacity: 0; }
+  15% { opacity: 1; }
+  100% { background-position: -30% 0; opacity: 0; }
+}
+
+/* Frosted segmented-control track for the category tab switcher. */
+.action-tab-track {
+  background: rgba(243, 244, 246, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.action-tab-pill {
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.action-tab-pill.active {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 2px 10px rgba(0, 97, 255, 0.18), inset 0 0 0 1px rgba(0, 97, 255, 0.12);
+}
+
+.action-tab-pill:active {
+  transform: scale(0.95);
+}
+
 /* Chat panel transition styles */
 .chat-panel-root {
   width: 100%;
@@ -657,6 +725,7 @@ body {
 
 /* Badge */
 .reports-badge {
+  position: relative;
   display: inline-block;
   font-size: 11px;
   font-weight: 600;
@@ -667,37 +736,113 @@ body {
   border-radius: 20px;
   margin-bottom: 14px;
   letter-spacing: 0.01em;
+  overflow: hidden;
+}
+
+.reports-badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.75) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: reports-badge-shine 3.2s ease-in-out infinite;
+}
+
+@keyframes reports-badge-shine {
+  0%, 30% { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(120%); }
+}
+
+/* Glowing animated outline for the whole modal, echoing the patient/notepad modal treatment */
+.reports-modal-outline-effect {
+  border: 1px solid rgba(0, 97, 255, 0.35);
+  box-shadow:
+    0 0 0 2px rgba(0, 97, 255, 0.3),
+    0 0 25px rgba(0, 97, 255, 0.2),
+    0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: reportsOutlineGlow 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes reportsOutlineGlow {
+  0% {
+    border-color: rgba(0, 97, 255, 0.35);
+    box-shadow:
+      0 0 0 2px rgba(0, 97, 255, 0.35),
+      0 0 20px rgba(0, 97, 255, 0.2),
+      0 20px 40px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    border-color: rgba(99, 102, 241, 0.55);
+    box-shadow:
+      0 0 0 2px rgba(99, 102, 241, 0.5),
+      0 0 30px rgba(99, 102, 241, 0.3),
+      0 22px 42px rgba(0, 0, 0, 0.25);
+  }
+  100% {
+    border-color: rgba(16, 185, 129, 0.55);
+    box-shadow:
+      0 0 0 2.5px rgba(16, 185, 129, 0.5),
+      0 0 32px rgba(16, 185, 129, 0.3),
+      0 25px 45px rgba(0, 0, 0, 0.28);
+  }
+}
+
+/* Decorative gradient wash across the top of the modal, sitting behind the header content */
+.reports-modal-content.reports-modal-glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 160px;
+  background: linear-gradient(135deg, rgba(0, 97, 255, 0.08), rgba(139, 92, 246, 0.07) 45%, rgba(16, 185, 129, 0.05));
+  border-radius: 24px 24px 50% 50% / 24px 24px 26px 26px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.reports-modal-content.reports-modal-glass > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Close */
-.reports-close-btn {
+.reports-modal-content .reports-close-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 18px;
+  right: 18px;
   width: 32px;
   height: 32px;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  background: rgba(249, 250, 251, 0.95);
+  backdrop-filter: blur(6px);
   color: #6b7280;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.2s ease;
+  z-index: 5;
 }
 
 .reports-close-btn:hover {
-  background: #f3f4f6;
-  color: #1f2937;
-  border-color: #d1d5db;
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.18);
+  transform: rotate(90deg);
 }
 
 /* Title & description */
 .reports-title {
   font-size: 24px;
   font-weight: 800;
-  color: #111827;
+  background: linear-gradient(120deg, #111827 40%, #0061ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   margin: 0 0 6px;
   letter-spacing: -0.03em;
 }
@@ -739,8 +884,8 @@ body {
 }
 
 .reports-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  transform: translateY(-3px) scale(1.008);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
 }
 
 /* Preview area */
@@ -789,6 +934,12 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.reports-card:hover .reports-card-icon {
+  transform: scale(1.12) rotate(-6deg);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
 }
 
 /* Status dot */
