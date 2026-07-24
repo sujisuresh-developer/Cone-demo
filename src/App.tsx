@@ -89,7 +89,7 @@ const PERSISTENT_LOOK_PRIORITY = [
 /** How long to hold on the patient/scene after a case ends (success/partial/failed) before the
  * CaseSummaryModal pops up — gives the learner a beat to absorb the terminal outcome instead of
  * the summary appearing the instant the last photo overlay clears. */
-const CASE_SUMMARY_MODAL_DELAY_MS = 3000
+const CASE_SUMMARY_MODAL_DELAY_MS = 15000
 
 function formatClock(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60)
