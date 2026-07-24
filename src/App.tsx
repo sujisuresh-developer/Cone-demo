@@ -362,6 +362,8 @@ export default function App() {
             onToggleMute={() => setIsMuted((m) => !m)}
             onToggleSound={() => setIsSoundOn((s) => !s)}
             patientImage={patientImage}
+            monitorAttached={monitorAttached}
+            onOpenVitals={() => setVitalsModalOpen(true)}
           />
           <RightSidebar
             monitorAttached={monitorAttached}

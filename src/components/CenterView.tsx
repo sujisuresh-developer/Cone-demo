@@ -23,6 +23,8 @@ type CenterViewProps = {
   onToggleMute: () => void
   onToggleSound: () => void
   patientImage: string
+  monitorAttached: boolean
+  onOpenVitals: () => void
 }
 
 export default function CenterView({
@@ -40,11 +42,14 @@ export default function CenterView({
   onToggleMute,
   onToggleSound,
   patientImage,
+  monitorAttached,
+  onOpenVitals,
 }: CenterViewProps) {
   const [reportsOpen, setReportsOpen] = useState(false)
   const [notepadOpen, setNotepadOpen] = useState(false)
   const [currentImg, setCurrentImg] = useState(patientImage)
   const [prevImg, setPrevImg] = useState<string | null>(null)
+  const [monitorHovered, setMonitorHovered] = useState(false)
 
   useEffect(() => {
     if (patientImage !== currentImg) {
@@ -65,31 +70,52 @@ export default function CenterView({
 
   return (
     <main className="card-shadow relative flex h-full flex-col overflow-hidden rounded-3xl">
-      <div className="absolute inset-0 bg-gray-900">
+      <div className="absolute inset-0 bg-gray-900 overflow-hidden">
         {VIDEO_EXTENSIONS.test(currentImg) && (
           <PatientMedia
             src="action-images/patient-without-monitor.png"
             alt="Patient"
-            className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
+            className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${
+              chatExpanded ? 'scale-105 blur-md' : monitorHovered ? 'scale-125' : ''
+            }`}
           />
         )}
         {prevImg && !VIDEO_EXTENSIONS.test(currentImg) && (
           <PatientMedia
             src={prevImg}
             alt="Patient"
-            className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
+            className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${
+              chatExpanded ? 'scale-105 blur-md' : monitorHovered ? 'scale-125' : ''
+            }`}
           />
         )}
         <PatientMedia
           key={currentImg}
           src={currentImg}
           alt="Patient in hospital room"
-          className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 ease-in-out ${chatExpanded ? 'scale-105 blur-md' : ''}`}
+          className={`absolute inset-0 h-full w-full origin-[75%_43%] object-cover object-top transition-transform duration-500 ease-in-out ${
+            chatExpanded ? 'scale-105 blur-md' : monitorHovered ? 'scale-125' : ''
+          }`}
         />
         <div
           className={`absolute inset-0 transition-all duration-500 ease-in-out ${chatExpanded ? 'bg-white/30' : 'bg-black/5'
             }`}
         />
+
+        {/* Clickable hotspot over the bedside monitor device in the scene — only present once the
+         * monitor is actually attached (patient-with-monitor.png shows it). Hovering it zooms the
+         * scene in on the monitor; clicking opens the same Live Vitals popup as the "i" button. */}
+        {monitorAttached && !chatExpanded && (
+          <button
+            type="button"
+            onClick={onOpenVitals}
+            onMouseEnter={() => setMonitorHovered(true)}
+            onMouseLeave={() => setMonitorHovered(false)}
+            aria-label="View live vitals monitor"
+            title="View live vitals"
+            className="absolute left-[62%] top-[29%] z-20 h-[27%] w-[25%] cursor-pointer rounded-lg"
+          />
+        )}
       </div>
 
       <div className="relative z-10 flex h-full flex-col justify-end">
