@@ -7,7 +7,7 @@ import PatientDetailModal from './components/PatientDetailModal'
 import CaseSummaryModal from './components/CaseSummaryModal'
 import { OUTCOME_ACTION_IDS } from './components/LeftSidebar'
 import { useCaseEngine } from './simulation/useCaseEngine'
-import { CLINICAL_HINTS, type Vitals } from './simulation/pneumothoraxCase'
+import { ACTIONS_BY_ID, CLINICAL_HINTS, type Vitals } from './simulation/pneumothoraxCase'
 import { appendImpressionToNotepad } from './utils/impressionNotes'
 
 // Kept only because VitalsDetailModal/RightSidebar still type against it — the demo runs a single
@@ -59,6 +59,13 @@ const AFTER_ACTION_IMAGE: Record<string, string> = {
   'analgesia-iv': 'action-images/IV Ang After.jpeg',
 }
 
+/** Actions whose after-image is just a generic "this was a poor/low-yield choice" mood shot
+ * (fail.png / D-Dimmer After) rather than a photo of actual equipment attached to the patient.
+ * These have no with-monitor variant, so once the monitor is attached it should keep showing
+ * instead of these — unlike a real treatment photo (chest-tube, iv-fluids, etc.), which should
+ * still win over the plain monitor shot since it depicts something genuinely on the patient. */
+const MOOD_ONLY_ACTION_IDS = new Set(['physical-exam', 'blood-panel', 'd-dimer', 'senior-consult'])
+
 /** Highest-significance first — determines which persistent look wins when several apply.
  * oxygen sits at the very top: once oxygen therapy is given, its after-image should stick
  * regardless of whichever other action is performed afterward. */
@@ -78,6 +85,11 @@ const PERSISTENT_LOOK_PRIORITY = [
   'senior-consult',
   'analgesia-iv',
 ]
+
+/** How long to hold on the patient/scene after a case ends (success/partial/failed) before the
+ * CaseSummaryModal pops up — gives the learner a beat to absorb the terminal outcome instead of
+ * the summary appearing the instant the last photo overlay clears. */
+const CASE_SUMMARY_MODAL_DELAY_MS = 15000
 
 function formatClock(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60)
@@ -128,6 +140,68 @@ export default function App() {
     }, duration)
   }, [])
 
+  // Pending "show result modal" timers, keyed by actionId, so several delayed results (e.g. an
+  // xray and a blood panel ordered back to back) can be in flight independently without one
+  // clobbering another. The action itself resolves and updates sim state right away — only the
+  // modal display is deferred, so the learner can keep interacting while it counts down.
+  const resultTimersRef = useRef<Map<string, number>>(new Map())
+
+  const clearResultTimer = useCallback((actionId: string) => {
+    const timers = resultTimersRef.current
+    const timerId = timers.get(actionId)
+    if (timerId != null) {
+      window.clearTimeout(timerId)
+      timers.delete(actionId)
+    }
+  }, [])
+
+  const clearAllResultTimers = useCallback(() => {
+    resultTimersRef.current.forEach((timerId) => window.clearTimeout(timerId))
+    resultTimersRef.current.clear()
+  }, [])
+
+  /** Shows an action's result modal either immediately or, if the action's metadata configures
+   * a `resultDelay`, after that many milliseconds. Reusable across every result type — outcome
+   * reports, exam findings, procedure outcomes, medication feedback, imaging results — since they
+   * all funnel through a `show()` callback that flips the relevant modal-open state. */
+  const showResult = useCallback(
+    (actionId: string, show: () => void) => {
+      const delay = ACTIONS_BY_ID[actionId]?.resultDelay ?? 0
+      if (delay <= 0) {
+        show()
+        return
+      }
+      clearResultTimer(actionId)
+      const timerId = window.setTimeout(() => {
+        resultTimersRef.current.delete(actionId)
+        show()
+      }, delay)
+      resultTimersRef.current.set(actionId, timerId)
+    },
+    [clearResultTimer]
+  )
+
+  // Cancel every pending result timer on unmount, and whenever the case restarts (state resets
+  // back to Arrival) — otherwise a stale timer from a previous run could pop a modal for an
+  // action the learner never performed this time around.
+  useEffect(() => {
+    if (engine.currentStateId === 'arrival') clearAllResultTimers()
+  }, [engine.currentStateId, clearAllResultTimers])
+
+  useEffect(() => clearAllResultTimers, [clearAllResultTimers])
+
+  // Hold the CaseSummaryModal back for a beat after the case actually ends (and any in-progress
+  // photo overlay clears), instead of popping it up the instant those conditions are true.
+  const [summaryModalReady, setSummaryModalReady] = useState(false)
+  useEffect(() => {
+    if (!engine.ended || patientOverrideImage !== null) {
+      setSummaryModalReady(false)
+      return
+    }
+    const timerId = window.setTimeout(() => setSummaryModalReady(true), CASE_SUMMARY_MODAL_DELAY_MS)
+    return () => window.clearTimeout(timerId)
+  }, [engine.ended, patientOverrideImage])
+
   const handleSend = () => {
     if (!message.trim()) return
     engine.sendMessage(message.trim())
@@ -145,25 +219,7 @@ export default function App() {
       // Automatically record professional impression note in notepad
       appendImpressionToNotepad(actionId)
 
-      const overrideVideo = VIDEO_OVERRIDE_BY_ACTION[actionId]
-      const hasOverride = !!overrideVideo
-
-      if (hasOverride) {
-        triggerImageOverride(overrideVideo, 2500)
-        window.setTimeout(() => {
-          engine.performAction(actionId)
-
-          if (OUTCOME_ACTION_IDS.has(actionId)) {
-            setActiveOutcomeAction(actionId)
-          } else if (actionId === 'history-taking') {
-            setPatientModalOpen(true)
-          } else if (actionId === 'monitoring') {
-            setVitalsModalOpen(true)
-          }
-        }, 2500)
-      } else {
-        engine.performAction(actionId)
-
+      const openResultModal = () => {
         if (OUTCOME_ACTION_IDS.has(actionId)) {
           setActiveOutcomeAction(actionId)
         } else if (actionId === 'history-taking') {
@@ -172,8 +228,22 @@ export default function App() {
           setVitalsModalOpen(true)
         }
       }
+
+      const overrideVideo = VIDEO_OVERRIDE_BY_ACTION[actionId]
+      const hasOverride = !!overrideVideo
+
+      if (hasOverride) {
+        triggerImageOverride(overrideVideo, 2500)
+        window.setTimeout(() => {
+          engine.performAction(actionId)
+          showResult(actionId, openResultModal)
+        }, 2500)
+      } else {
+        engine.performAction(actionId)
+        showResult(actionId, openResultModal)
+      }
     },
-    [engine, patientOverrideImage, triggerImageOverride]
+    [engine, patientOverrideImage, triggerImageOverride, showResult]
   )
 
   const handleUseHint = useCallback(() => {
@@ -199,7 +269,19 @@ export default function App() {
   )
   const persistentLookImage = persistentLookActionId ? AFTER_ACTION_IMAGE[persistentLookActionId] : null
 
-  let baseImage = 'action-images/patient-without-monitor.png'
+  // Before the learner has done anything at all (still on Arrival, no actions performed, monitor
+  // not yet attached) show the dedicated arrival photo instead of the plain unmonitored default.
+  const noActionsYet =
+    engine.currentStateId === 'arrival' && engine.performedActionIds.length === 0 && !monitorAttached
+
+  // Baseline reflects the Attach Monitor toggle directly, so any action without a more specific
+  // look (persistent after-image, bad/happy vitals override, death) correctly keeps showing the
+  // monitor once it's attached, instead of silently falling back to the unmonitored photo.
+  let baseImage = noActionsYet
+    ? 'action-images/Patient Arrival.jpeg'
+    : monitorAttached
+      ? 'action-images/patient-with-monitor.png'
+      : 'action-images/patient-without-monitor.png'
   if (engine.currentStateId === 'death') {
     baseImage = 'action-images/dead.png'
   } else if (persistentLookActionId === 'oxygen' || persistentLookActionId === 'needle-decompression') {
@@ -209,18 +291,22 @@ export default function App() {
     baseImage = 'action-images/after_taking_oxygen.png'
   } else if (isBad) {
     baseImage = 'action-images/fail.png'
-  } else if (persistentLookActionId === 'physical-exam' || persistentLookActionId === 'blood-panel') {
-    // physical-exam/blood-panel's fail.png look must win even when vitals otherwise read as "happy".
-    baseImage = 'action-images/fail.png'
-  } else if (persistentLookActionId === 'd-dimer') {
-    // d-dimer's after-image must win even when vitals otherwise read as "happy".
-    baseImage = 'action-images/D-Dimmer Test After.jpeg'
-  } else if (isHappy) {
-    baseImage = 'action-images/fail.png'
-  } else if (persistentLookImage) {
+  } else if (persistentLookActionId && !MOOD_ONLY_ACTION_IDS.has(persistentLookActionId) && persistentLookImage) {
+    // A real treatment/equipment photo (chest-tube, iv-fluids, abg, ecg, monitoring, ...) always
+    // wins — it depicts something genuinely on the patient, monitor attached or not.
     baseImage = persistentLookImage
   } else if (monitorAttached) {
+    // No monitor-attached variant exists for the generic "poor choice" mood shots (physical-exam,
+    // blood-panel, d-dimer, senior-consult) or the plain "happy" look, so once the monitor is
+    // attached it keeps showing instead of falling back to one of those.
     baseImage = 'action-images/patient-with-monitor.png'
+  } else if (persistentLookActionId === 'd-dimer') {
+    baseImage = 'action-images/D-Dimmer Test After.jpeg'
+  } else if (persistentLookImage) {
+    // Remaining mood-only persistent looks (physical-exam, blood-panel, senior-consult -> fail.png).
+    baseImage = persistentLookImage
+  } else if (isHappy) {
+    baseImage = 'action-images/fail.png'
   }
 
   const patientImage = patientOverrideImage || baseImage
@@ -276,6 +362,8 @@ export default function App() {
             onToggleMute={() => setIsMuted((m) => !m)}
             onToggleSound={() => setIsSoundOn((s) => !s)}
             patientImage={patientImage}
+            monitorAttached={monitorAttached}
+            onOpenVitals={() => setVitalsModalOpen(true)}
           />
           <RightSidebar
             monitorAttached={monitorAttached}
@@ -299,10 +387,11 @@ export default function App() {
           onClose={() => setPatientModalOpen(false)}
         />
         {/* engine.ended fires the instant a terminal action resolves — wait for any in-progress
-            photo overlay to finish its 3s first, so a terminal action doesn't cut straight to
-            the summary before the learner sees what just happened. */}
+            photo overlay to finish its 3s first, then hold for CASE_SUMMARY_MODAL_DELAY_MS more
+            (summaryModalReady) so a terminal action doesn't cut straight to the summary before
+            the learner sees what just happened. */}
         <CaseSummaryModal
-          open={engine.ended && patientOverrideImage === null}
+          open={engine.ended && patientOverrideImage === null && summaryModalReady}
           onClose={engine.restart}
           endReason={engine.endReason ?? 'handoff'}
           caseStatus={engine.result?.caseStatus ?? 'failed'}

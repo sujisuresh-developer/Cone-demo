@@ -5,7 +5,7 @@ import PatientMedia, { VIDEO_EXTENSIONS } from './PatientMedia'
 
 
 /** Diagnostics actions that open a rich result panel (OutcomeModal) instead of just logging "Done". */
-export const OUTCOME_ACTION_IDS = new Set(['pocus', 'chest-xray', 'blood-panel', 'troponin', 'ecg', 'd-dimer', 'ct-chest', 'chest-tube'])
+export const OUTCOME_ACTION_IDS = new Set(['pocus', 'chest-xray', 'blood-panel', 'troponin', 'ecg', 'd-dimer', 'ct-chest', 'chest-tube', 'physical-exam'])
 
 function formatTimeLabel(seconds: number): string {
   if (seconds < 60) return `${seconds}s`
@@ -146,15 +146,15 @@ export default function LeftSidebar({
                     {/* Tab navigation */}
           {availableTabs.length > 0 && (
             <div className="mt-2">
-              <div className="no-scrollbar flex space-x-2 overflow-x-auto whitespace-nowrap pb-2 -mx-2 px-2">
+              <div className="action-tab-track no-scrollbar flex space-x-1 overflow-x-auto whitespace-nowrap rounded-full p-1 -mx-2 px-2">
                 {availableTabs.map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setSelectedTab(tab as ActionTab)}
-                    className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
+                    className={`action-tab-pill flex-shrink-0 rounded-full px-3 py-1 text-xs font-medium cursor-pointer ${
                       tab === selectedTab
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? 'active text-primary'
+                        : 'text-gray-600 hover:bg-white/50'
                     }`}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -178,7 +178,7 @@ export default function LeftSidebar({
 
         <div className="relative min-h-0 flex-1 pl-1">
           <div className="absolute top-1 bottom-4 left-0 w-[3px] rounded-full bg-primary" />
-          <div key={currentStateName} className="action-slide-in h-full">
+          <div key={`${currentStateName}-${selectedTab}`} className="action-glass-transition relative h-full">
             <ul className="action-scroll h-full space-y-0.5 overflow-y-auto pl-4">
               <li className="flex items-center justify-between rounded-lg py-1.5 pr-1">
                 <div className="flex items-center gap-3 min-w-0">
