@@ -38,7 +38,30 @@ export type ScoreBreakdownEntry = {
   label: string
   points: number
   note?: string
+  /** State the learner was in when this decision was made (e.g. "Arrival", "Assessment"). */
+  stateName: string
+  isCorrect: boolean
+  /** Name of the best-scoring action available from that same state — only set when isCorrect
+   * is false, so the summary can say what should have been done instead. */
+  correctActionLabel?: string
 }
+
+/** For every state, the name of its highest-scoring outgoing action edge — used to tell the
+ * learner what the correct move would have been at a state where they chose wrong. Computed
+ * once at module load since EDGES/ACTIONS_BY_ID never change at runtime. */
+const BEST_ACTION_NAME_BY_STATE: Partial<Record<StateId, string>> = (() => {
+  const bestScore: Partial<Record<StateId, number>> = {}
+  const bestName: Partial<Record<StateId, string>> = {}
+  for (const edge of EDGES) {
+    if (edge.trigger !== 'action' || !edge.actionId) continue
+    const current = bestScore[edge.source]
+    if (current === undefined || edge.score > current) {
+      bestScore[edge.source] = edge.score
+      bestName[edge.source] = ACTIONS_BY_ID[edge.actionId]?.name ?? edge.actionId
+    }
+  }
+  return bestName
+})()
 
 export type CaseResult = {
   totalScore: number
@@ -94,10 +117,20 @@ function computeResult(events: EngineEvent[], finalStateId: StateId, hintsUsed: 
     const edge = EDGES.find((edge) => edge.id === e.edgeId)
     const label = e.actionId ? ACTIONS_BY_ID[e.actionId]?.name ?? e.actionId : `${STATES[e.fromState].name} → ${STATES[e.toState].name} (untreated)`
     const note = e.score < 0 ? edge?.deductionText ?? edge?.transitionNote : edge?.transitionNote
-    return { label, points: e.score, note }
+    const isCorrect = e.score > 0
+    const bestActionName = BEST_ACTION_NAME_BY_STATE[e.fromState]
+    // Don't suggest the same action as "correct" if it's what was actually taken (can happen
+    // with a timer/untreated event, where actionId is undefined and label is a synthetic string).
+    const correctActionLabel = !isCorrect && bestActionName && bestActionName !== label ? bestActionName : undefined
+    return { label, points: e.score, note, stateName: STATES[e.fromState].name, isCorrect, correctActionLabel }
   })
   if (hintDeductionPts > 0) {
-    scoreBreakdown.push({ label: `${hintsUsed.length} clinical hint${hintsUsed.length > 1 ? 's' : ''} used`, points: -hintDeductionPts })
+    scoreBreakdown.push({
+      label: `${hintsUsed.length} clinical hint${hintsUsed.length > 1 ? 's' : ''} used`,
+      points: -hintDeductionPts,
+      stateName: STATES[finalStateId].name,
+      isCorrect: false,
+    })
   }
 
   return {
@@ -282,7 +315,14 @@ export function useCaseEngine() {
   )
 
   const sendMessage = useCallback((text: string) => pushMessage('doctor', text), [pushMessage])
-  const handOff = useCallback(() => endCase('handoff'), [endCase])
+  // Tracked separately from `ended`/`endReason`: those flip as soon as the case is logically over
+  // (terminal state reached, or timeout), but the CaseSummaryModal should only appear once the
+  // learner explicitly confirms hand-off — not the instant the case ends behind the scenes.
+  const [handoffPerformed, setHandoffPerformed] = useState(false)
+  const handOff = useCallback(() => {
+    setHandoffPerformed(true)
+    endCase('handoff')
+  }, [endCase])
 
   /** Resets the whole engine back to Arrival — lets the same demo be re-run without a page reload. */
   const restart = useCallback(() => {
@@ -298,14 +338,17 @@ export function useCaseEngine() {
     setMessages([{ id: `m-init-${Date.now()}`, sender: 'patient', text: STATES.arrival.dialogue }])
     setEnded(false)
     setEndReason(null)
+    setHandoffPerformed(false)
     setHintsUsed([])
     rerender()
   }, [rerender])
 
   // Main tick loop — interpolates any in-flight vitals ramp, and advances the shared
-  // simulated clock by one second for every real second that passes while idle.
+  // simulated clock by one second for every real second that passes while idle. Keeps running
+  // past the case logically ending (terminal state reached) so the countdown on screen matches
+  // reality until the learner actually confirms hand-off.
   useEffect(() => {
-    if (ended) return
+    if (handoffPerformed) return
     let lastSecondTick = Date.now()
     const id = setInterval(() => {
       const now = Date.now()
@@ -325,7 +368,7 @@ export function useCaseEngine() {
       }
     }, 200)
     return () => clearInterval(id)
-  }, [ended, advanceSimClock])
+  }, [handoffPerformed, advanceSimClock])
 
   // Timeout watchdog — the case ends the moment the countdown hits zero, wherever the learner is.
   useEffect(() => {
@@ -359,6 +402,7 @@ export function useCaseEngine() {
     isRamping,
     ended,
     endReason,
+    handoffPerformed,
     handOff,
     restart,
     hintsUsed,

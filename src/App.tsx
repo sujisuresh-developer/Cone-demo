@@ -66,6 +66,15 @@ const AFTER_ACTION_IMAGE: Record<string, string> = {
  * still win over the plain monitor shot since it depicts something genuinely on the patient. */
 const MOOD_ONLY_ACTION_IDS = new Set(['physical-exam', 'blood-panel', 'd-dimer', 'senior-consult'])
 
+/** Persistent-look actions whose after-image doesn't depict the bedside monitor at all, so once
+ * the monitor is attached it should keep showing instead of the action's own photo replacing it.
+ * Handled with the same precedence as oxygen/needle-decompression (before the isBad check) because
+ * these actions' own edges can deteriorate vitals into a "bad" reading (e.g. analgesia-iv routes
+ * to Respiratory Distress), which would otherwise trip isBad's generic fail.png first. Unlike the
+ * mood-only set, this still has a real (non-fail.png) after-image to fall back to when the
+ * monitor isn't attached. */
+const KEEP_MONITOR_OVER_ACTION_IDS = new Set(['analgesia-iv'])
+
 /** Highest-significance first — determines which persistent look wins when several apply.
  * oxygen sits at the very top: once oxygen therapy is given, its after-image should stick
  * regardless of whichever other action is performed afterward. */
@@ -77,19 +86,19 @@ const PERSISTENT_LOOK_PRIORITY = [
   'iv-access',
   'monitoring',
   'abg',
+  // analgesia-iv must outrank every MOOD_ONLY_ACTION_IDS entry (blood-panel, d-dimer,
+  // physical-exam, senior-consult below) — otherwise, since physical-exam alone is performed in
+  // nearly every playthrough and used to rank above analgesia-iv here, .find() below would keep
+  // resolving to 'physical-exam' after analgesia was given, and analgesia's own
+  // KEEP_MONITOR_OVER_ACTION_IDS handling upstream would never actually run.
+  'analgesia-iv',
   'blood-panel',
   'troponin',
   'd-dimer',
   'ecg',
   'physical-exam',
   'senior-consult',
-  'analgesia-iv',
 ]
-
-/** How long to hold on the patient/scene after a case ends (success/partial/failed) before the
- * CaseSummaryModal pops up — gives the learner a beat to absorb the terminal outcome instead of
- * the summary appearing the instant the last photo overlay clears. */
-const CASE_SUMMARY_MODAL_DELAY_MS = 15000
 
 function formatClock(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60)
@@ -190,17 +199,10 @@ export default function App() {
 
   useEffect(() => clearAllResultTimers, [clearAllResultTimers])
 
-  // Hold the CaseSummaryModal back for a beat after the case actually ends (and any in-progress
-  // photo overlay clears), instead of popping it up the instant those conditions are true.
-  const [summaryModalReady, setSummaryModalReady] = useState(false)
-  useEffect(() => {
-    if (!engine.ended || patientOverrideImage !== null) {
-      setSummaryModalReady(false)
-      return
-    }
-    const timerId = window.setTimeout(() => setSummaryModalReady(true), CASE_SUMMARY_MODAL_DELAY_MS)
-    return () => window.clearTimeout(timerId)
-  }, [engine.ended, patientOverrideImage])
+  // Show the CaseSummaryModal only once the learner explicitly confirms hand-off — not the
+  // instant the case ends behind the scenes (terminal state reached, or timeout) — with no
+  // delay and without waiting on unrelated overlays.
+  const summaryModalReady = engine.ended && engine.handoffPerformed
 
   const handleSend = () => {
     if (!message.trim()) return
@@ -289,16 +291,26 @@ export default function App() {
     // "bad" (e.g. oxygen -> tension-pneumo, or mid-transition out of tension-pneumo after
     // needle decompression) or "happy".
     baseImage = 'action-images/after_taking_oxygen.png'
+  } else if (persistentLookActionId && KEEP_MONITOR_OVER_ACTION_IDS.has(persistentLookActionId)) {
+    // analgesia-iv's edge deteriorates vitals into Respiratory Distress (spO2 89), which would
+    // otherwise trip the isBad check below and show the generic fail.png mood shot before we
+    // ever get to decide between the monitor and analgesia's own photo — same precedence
+    // oxygen/needle-decompression already get over isBad, just monitor-aware instead of fixed.
+    baseImage = monitorAttached ? 'action-images/patient-with-monitor.png' : persistentLookImage ?? baseImage
   } else if (isBad) {
     baseImage = 'action-images/fail.png'
-  } else if (persistentLookActionId && !MOOD_ONLY_ACTION_IDS.has(persistentLookActionId) && persistentLookImage) {
+  } else if (
+    persistentLookActionId &&
+    !MOOD_ONLY_ACTION_IDS.has(persistentLookActionId) &&
+    persistentLookImage
+  ) {
     // A real treatment/equipment photo (chest-tube, iv-fluids, abg, ecg, monitoring, ...) always
     // wins — it depicts something genuinely on the patient, monitor attached or not.
     baseImage = persistentLookImage
   } else if (monitorAttached) {
     // No monitor-attached variant exists for the generic "poor choice" mood shots (physical-exam,
-    // blood-panel, d-dimer, senior-consult) or the plain "happy" look, so once the monitor is
-    // attached it keeps showing instead of falling back to one of those.
+    // blood-panel, d-dimer, senior-consult), so once the monitor is attached it keeps showing
+    // instead of falling back to one of those.
     baseImage = 'action-images/patient-with-monitor.png'
   } else if (persistentLookActionId === 'd-dimer') {
     baseImage = 'action-images/D-Dimmer Test After.jpeg'
@@ -353,8 +365,6 @@ export default function App() {
             onMessageChange={setMessage}
             messages={engine.messages}
             onSend={handleSend}
-            performedActions={engine.performedActionIds}
-            onViewOutcome={setActiveOutcomeAction}
             _onViewPatientDetails={() => setPatientModalOpen(true)}
             onUseHint={handleUseHint}
             isMuted={isMuted}
@@ -375,6 +385,8 @@ export default function App() {
             scenario="pneumothorax"
             vitalsModalOpen={vitalsModalOpen}
             onVitalsModalOpenChange={setVitalsModalOpen}
+            performedActions={engine.performedActionIds}
+            onViewOutcome={setActiveOutcomeAction}
           />
         </div>
         <OutcomeModal
@@ -386,12 +398,8 @@ export default function App() {
           open={patientModalOpen}
           onClose={() => setPatientModalOpen(false)}
         />
-        {/* engine.ended fires the instant a terminal action resolves — wait for any in-progress
-            photo overlay to finish its 3s first, then hold for CASE_SUMMARY_MODAL_DELAY_MS more
-            (summaryModalReady) so a terminal action doesn't cut straight to the summary before
-            the learner sees what just happened. */}
         <CaseSummaryModal
-          open={engine.ended && patientOverrideImage === null && summaryModalReady}
+          open={summaryModalReady}
           onClose={engine.restart}
           endReason={engine.endReason ?? 'handoff'}
           caseStatus={engine.result?.caseStatus ?? 'failed'}
