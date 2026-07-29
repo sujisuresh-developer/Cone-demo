@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react'
-import { NotebookPen, FileText } from 'lucide-react'
 import ChatPanel, { AudioControls, type ChatMessage } from './ChatPanel'
-import ReportsModal from './ReportsModal'
-import NotepadModal from './NotepadModal'
 import PatientMedia, { VIDEO_EXTENSIONS } from './PatientMedia'
 
 
@@ -14,8 +11,6 @@ type CenterViewProps = {
   onMessageChange: (value: string) => void
   messages: ChatMessage[]
   onSend: () => void
-  performedActions: string[]
-  onViewOutcome: (actionId: string) => void
   _onViewPatientDetails: () => void
   onUseHint: () => void
   isMuted: boolean
@@ -34,8 +29,6 @@ export default function CenterView({
   onMessageChange,
   messages,
   onSend,
-  performedActions,
-  onViewOutcome,
   onUseHint,
   isMuted,
   isSoundOn,
@@ -45,8 +38,6 @@ export default function CenterView({
   monitorAttached,
   onOpenVitals,
 }: CenterViewProps) {
-  const [reportsOpen, setReportsOpen] = useState(false)
-  const [notepadOpen, setNotepadOpen] = useState(false)
   const [currentImg, setCurrentImg] = useState(patientImage)
   const [prevImg, setPrevImg] = useState<string | null>(null)
   const [monitorHovered, setMonitorHovered] = useState(false)
@@ -163,43 +154,6 @@ export default function CenterView({
           </div>
         </div>
       </div>
-
-      {/* Floating buttons in corners */}
-      <button
-        type="button"
-        onClick={() => setNotepadOpen(true)}
-        className="absolute bottom-6 left-6 z-20 flex flex-col items-center gap-1.5 group animate-fade-in"
-      >
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white card-shadow transition-all duration-300 hover:scale-105 hover:bg-gray-50">
-          <NotebookPen className="h-5 w-5 text-gray-600" strokeWidth={1.5} />
-        </div>
-        <span className="text-[11px] font-semibold text-gray-700 bg-white/80 px-2 py-0.5 rounded-full card-shadow backdrop-blur-[2px] transition-all group-hover:bg-white">
-          Notepad
-        </span>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setReportsOpen(true)}
-        className="absolute bottom-6 right-6 z-20 flex flex-col items-center gap-1.5 group animate-fade-in"
-      >
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white card-shadow transition-all duration-300 hover:scale-105 hover:bg-gray-50">
-          <FileText className="h-5 w-5 text-gray-600" strokeWidth={1.5} />
-        </div>
-        <span className="text-[11px] font-semibold text-gray-700 bg-white/80 px-2 py-0.5 rounded-full card-shadow backdrop-blur-[2px] transition-all group-hover:bg-white">
-          Reports
-        </span>
-      </button>
-      <NotepadModal
-        open={notepadOpen}
-        onClose={() => setNotepadOpen(false)}
-      />
-      <ReportsModal
-        open={reportsOpen}
-        onClose={() => setReportsOpen(false)}
-        performedActions={performedActions}
-        onViewOutcome={onViewOutcome}
-      />
     </main>
   )
 }

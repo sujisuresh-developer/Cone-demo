@@ -8,6 +8,8 @@ import {
   ArrowRight,
   Home,
   CheckCircle,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react'
 import type { ScoreBreakdownEntry } from '../simulation/useCaseEngine'
 
@@ -238,6 +240,64 @@ export default function CaseSummaryModal({
             ) : (
               <div className="border border-gray-100 rounded-xl px-3.5 py-4 text-[11px] text-gray-400 italic text-center">
                 No scored actions yet.
+              </div>
+            )}
+          </div>
+
+          {/* Areas for Improvement — every scored decision in one timeline, each stamped with the
+              state it happened in and the action taken, so the learner can trace exactly where
+              things went right or wrong instead of reading a plain correct/wrong split. */}
+          <div className="border-t border-gray-100 pt-4 mb-4">
+            <h3 className="text-[12px] font-bold text-gray-800 mb-3">Areas for improvement</h3>
+            {scoreBreakdown.length > 0 ? (
+              <div className="space-y-2">
+                {scoreBreakdown.map((entry, index) => (
+                  <div
+                    key={index}
+                    className={`rounded-xl border px-3.5 py-2.5 ${
+                      entry.isCorrect ? 'border-emerald-100 bg-emerald-50/40' : 'border-red-100 bg-red-50/40'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex items-start gap-1.5">
+                        {entry.isCorrect ? (
+                          <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                        ) : (
+                          <XCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
+                        )}
+                        <p className="text-[11.5px] leading-snug text-gray-700">
+                          <span className="font-bold text-gray-800">In {entry.stateName}</span>
+                          {', you '}
+                          <span className={entry.isCorrect ? 'font-semibold text-emerald-700' : 'font-semibold text-red-700'}>
+                            {entry.isCorrect ? 'correctly performed' : 'performed the wrong action —'}
+                          </span>{' '}
+                          <span className="font-semibold">{entry.label}</span>
+                          {!entry.isCorrect && entry.correctActionLabel && (
+                            <>
+                              {'. Correct action: '}
+                              <span className="font-semibold text-emerald-700">{entry.correctActionLabel}</span>
+                            </>
+                          )}
+                          .
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${
+                          entry.isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {entry.isCorrect ? 'Correct' : 'Wrong'}
+                      </span>
+                    </div>
+                    {entry.note && (
+                      <p className="text-[10.5px] text-gray-400 mt-1 ml-[19px] leading-snug">{entry.note}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border border-gray-100 rounded-xl px-3.5 py-4 text-[11px] text-gray-400 italic text-center">
+                No scored actions this run.
               </div>
             )}
           </div>

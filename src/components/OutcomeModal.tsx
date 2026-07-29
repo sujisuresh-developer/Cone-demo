@@ -151,58 +151,128 @@ function BloodPanelTable() {
   )
 }
 
-type ExamFinding = { system: string; finding: string }
+type ExamFinding = { system: string; finding: string; status: 'normal' | 'abnormal' }
 
+// Findings tailored to this case's right-sided simple pneumothorax: Pulm is the one abnormal
+// system (unilateral decreased breath sounds + hyperresonance, matching the POCUS/CXR findings
+// and the physical-exam result text in pneumothoraxCase.ts), everything else stays within the
+// Physical Exam Library's normal baseline (Section 1) since no tension physiology has developed
+// yet at this point in the case (no tracheal deviation, no JVD, no hemodynamic collapse).
 const PHYSICAL_EXAM_FINDINGS: ExamFinding[] = [
-  { system: 'Gen', finding: 'NAD, well-appearing, alert and oriented ×3' },
-  { system: 'HEENT', finding: 'NCAT, PERRL, EOMI, sclerae anicteric, oropharynx clear, MMM' },
-  { system: 'Neck', finding: 'Supple, no LAD, no thyromegaly, no JVD' },
-  { system: 'CV', finding: 'RRR, normal S1/S2, no murmurs/rubs/gallops, no edema, 2+ distal pulses' },
-  { system: 'Pulm', finding: 'CTAB, no wheezes/rales/rhonchi, unlabored respirations' },
-  { system: 'Abd', finding: 'Soft, non-tender, non-distended, +BS, no HSM, no rebound or guarding' },
-  { system: 'Ext', finding: 'No edema, cyanosis, or clubbing; warm and well-perfused' },
-  { system: 'Skin', finding: 'Warm, dry, no rashes or lesions' },
-  { system: 'Neuro', finding: 'CN II–XII grossly intact, strength 5/5 throughout, sensation intact, gait normal' },
-  { system: 'Psych', finding: 'Normal mood and affect, appropriate behavior' },
+  {
+    system: 'Gen',
+    finding: 'Awake, alert, and well appearing. Mildly uncomfortable from pleuritic chest pain but in no acute distress. Cooperative with the exam.',
+    status: 'normal',
+  },
+  {
+    system: 'HEENT',
+    finding: 'Normocephalic and atraumatic. PERRL, EOMI. Sclerae anicteric, oropharynx clear. Mucous membranes moist.',
+    status: 'normal',
+  },
+  {
+    system: 'Neck',
+    finding: 'Supple with full range of motion. Trachea midline. No jugular venous distention. No thyromegaly or carotid bruits.',
+    status: 'normal',
+  },
+  {
+    system: 'CV',
+    finding: 'Regular rate and rhythm, mildly tachycardic. Normal S1/S2, no murmurs, rubs, or gallops. No jugular venous distention. Peripheral pulses 2+ and symmetric, no edema.',
+    status: 'normal',
+  },
+  {
+    system: 'Pulm',
+    finding: 'Tachypneic with asymmetric chest expansion, decreased on the right. Diminished to absent breath sounds over the right hemithorax with hyperresonance to percussion. No wheezes, rales, or rhonchi. Left side clear.',
+    status: 'abnormal',
+  },
+  {
+    system: 'Abd',
+    finding: 'Soft, nontender, and nondistended. Normoactive bowel sounds. No hepatosplenomegaly, masses, or guarding.',
+    status: 'normal',
+  },
+  {
+    system: 'Ext',
+    finding: 'No edema, cyanosis, or clubbing. Warm and well perfused. No calf tenderness or swelling.',
+    status: 'normal',
+  },
+  {
+    system: 'Skin',
+    finding: 'Warm and dry with normal turgor. No rashes, lesions, or ecchymoses. Capillary refill less than 2 seconds.',
+    status: 'normal',
+  },
+  {
+    system: 'Neuro',
+    finding: 'Alert and oriented ×3. Cranial nerves II–XII grossly intact. Strength 5/5 throughout, sensation intact. Gait steady.',
+    status: 'normal',
+  },
+  {
+    system: 'Psych',
+    finding: 'Mood and affect appropriate to the situation. Speech normal in rate and rhythm. No suicidal or homicidal ideation.',
+    status: 'normal',
+  },
 ]
 
 /**
  * Shows the active finding as an in-flow panel below the chip grid instead of a floating
  * tooltip anchored to each chip — a tooltip positioned off an individual chip gets clipped by
  * the modal's scrollable container (overflow-y: auto forces overflow-x: auto too) whenever the
- * chip sits near an edge, which is exactly what made some hints unreadable. This also makes
- * touch/tap work the same as hover, so it degrades gracefully on narrow/mobile viewports.
+ * chip sits near an edge, which is exactly what made some hints unreadable.
  */
 function PhysicalExamFindings() {
-  const [active, setActive] = useState<ExamFinding>(PHYSICAL_EXAM_FINDINGS[0])
+  const [active, setActive] = useState<ExamFinding | null>(null)
 
   return (
     <div className="border border-gray-200 rounded-xl p-3 sm:p-3.5 bg-gray-50/60 space-y-2.5">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-        Tap or hover a system for the full finding
+        Click a system for the full finding
       </p>
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
-        {PHYSICAL_EXAM_FINDINGS.map((f) => (
-          <button
-            key={f.system}
-            type="button"
-            onMouseEnter={() => setActive(f)}
-            onFocus={() => setActive(f)}
-            onClick={() => setActive(f)}
-            className={`rounded-lg border px-1.5 py-1.5 text-[10.5px] sm:text-[11px] font-bold transition-colors cursor-pointer ${
-              active.system === f.system
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-primary/40 hover:bg-primary/5'
-            }`}
-          >
-            {f.system}
-          </button>
-        ))}
+        {PHYSICAL_EXAM_FINDINGS.map((f) => {
+          const isAbnormal = f.status === 'abnormal'
+          const isActive = active?.system === f.system
+          return (
+            <button
+              key={f.system}
+              type="button"
+              onClick={() => setActive(f)}
+              className={`relative rounded-lg border px-1.5 py-1.5 text-[10.5px] sm:text-[11px] font-bold transition-colors cursor-pointer ${
+                isActive
+                  ? isAbnormal
+                    ? 'border-red-400 bg-red-50 text-red-700'
+                    : 'border-primary bg-primary/10 text-primary'
+                  : isAbnormal
+                    ? 'border-red-200 bg-red-50/50 text-red-700 hover:border-red-300 hover:bg-red-50'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-primary/40 hover:bg-primary/5'
+              }`}
+            >
+              {isAbnormal && (
+                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500" />
+              )}
+              {f.system}
+            </button>
+          )
+        })}
       </div>
-      <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
-        <span className="block text-[10px] font-bold text-primary mb-0.5">{active.system}</span>
-        <span className="block text-[11px] leading-relaxed text-gray-700 break-words">{active.finding}</span>
-      </div>
+      {active && (
+        <div
+          className={`rounded-lg border px-3 py-2 ${
+            active.status === 'abnormal' ? 'border-red-200 bg-red-50/60' : 'border-primary/20 bg-primary/5'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-2 mb-0.5">
+            <span className={`text-[10px] font-bold ${active.status === 'abnormal' ? 'text-red-600' : 'text-primary'}`}>
+              {active.system}
+            </span>
+            <span
+              className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${
+                active.status === 'abnormal' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
+              }`}
+            >
+              {active.status === 'abnormal' ? 'Abnormal' : 'Normal'}
+            </span>
+          </div>
+          <span className="block text-[11px] leading-relaxed text-gray-700 break-words">{active.finding}</span>
+        </div>
+      )}
     </div>
   )
 }

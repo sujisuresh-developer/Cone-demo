@@ -5,12 +5,16 @@ import {
   Info,
   AlertTriangle,
   X,
+  NotebookPen,
+  FileText,
 } from 'lucide-react'
 import VitalsDetailModal, {
   getEcgValue,
   getPlethValue,
   getRespValue,
 } from './VitalsDetailModal'
+import NotepadModal from './NotepadModal'
+import ReportsModal from './ReportsModal'
 import { type Vitals, type ScenarioMode } from '../App'
 
 // Pneumothorax is a respiratory/hemodynamic presentation — Temperature never moves meaningfully
@@ -322,6 +326,8 @@ type RightSidebarProps = {
   scenario: ScenarioMode
   vitalsModalOpen: boolean
   onVitalsModalOpenChange: (open: boolean) => void
+  performedActions: string[]
+  onViewOutcome: (actionId: string) => void
 }
 
 export default function RightSidebar({
@@ -334,10 +340,14 @@ export default function RightSidebar({
   scenario,
   vitalsModalOpen,
   onVitalsModalOpenChange,
+  performedActions,
+  onViewOutcome,
 }: RightSidebarProps) {
 
   const [handoffInfoOpen, setHandoffInfoOpen] = useState(false)
   const [handoffConfirmOpen, setHandoffConfirmOpen] = useState(false)
+  const [notepadOpen, setNotepadOpen] = useState(false)
+  const [reportsOpen, setReportsOpen] = useState(false)
 
   // Baseline reveal: the moment the monitor is attached, show 0s for 2s before
   // jumping to the patient's actual starting vitals — mimics a monitor booting up.
@@ -472,6 +482,26 @@ export default function RightSidebar({
                 <PlaceholderVitalCard key={vital.label} {...vital} />
               ))}
         </div>
+
+        {/* Notepad / Reports */}
+        <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setNotepadOpen(true)}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-100 bg-gray-50/50 px-2 py-2.5 text-[12.5px] font-semibold text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer"
+          >
+            <NotebookPen className="h-4 w-4 shrink-0 text-gray-500" strokeWidth={1.5} />
+            <span className="truncate">Notepad</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setReportsOpen(true)}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-100 bg-gray-50/50 px-2 py-2.5 text-[12.5px] font-semibold text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer"
+          >
+            <FileText className="h-4 w-4 shrink-0 text-gray-500" strokeWidth={1.5} />
+            <span className="truncate">Reports</span>
+          </button>
+        </div>
       </div>
 
       {/* Hand-off */}
@@ -529,6 +559,14 @@ export default function RightSidebar({
           setHandoffConfirmOpen(false)
           onHandOff()
         }}
+      />
+
+      <NotepadModal open={notepadOpen} onClose={() => setNotepadOpen(false)} />
+      <ReportsModal
+        open={reportsOpen}
+        onClose={() => setReportsOpen(false)}
+        performedActions={performedActions}
+        onViewOutcome={onViewOutcome}
       />
     </aside>
   )
